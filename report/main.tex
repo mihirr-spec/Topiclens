@@ -1,6 +1,5 @@
 % Recommender Systems Project Report: TopicLens
-% Compile with pdfLaTeX (Overleaf: upload this folder, set main.tex as the main file).
-% Items still to fill in are marked with \fillme{...} and show up in red.
+% Compile with pdfLaTeX, XeLaTeX or Tectonic (Overleaf: upload this folder, main file main.tex).
 
 \documentclass[12pt,a4paper,oneside]{report}
 
@@ -13,36 +12,36 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{tabularx}
-\usepackage{multirow}
 \usepackage{amsmath}
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{caption}
+\usepackage{float}
 \usepackage{titlesec}
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows.meta}
 \usepackage[hidelinks]{hyperref}
 
-\newcommand{\fillme}[1]{\textcolor{red}{#1}}
-
-% Details used on the title page and certificate
-\newcommand{\reporttitle}{TopicLens: An Explainable News Recommender}
+% Details used on the title page
+\newcommand{\reporttitle}{TopicLens}
+\newcommand{\reportsubtitle}{An Explainable News Recommender}
 \newcommand{\studentA}{Riddhima}
 \newcommand{\regA}{2427010547}
 \newcommand{\supervisor}{Pranshu Pranjal}
-\newcommand{\acadyear}{\fillme{2026--2027}}
+\newcommand{\acadyear}{2026--2027}
 
-% Formatting from the department guidelines: Times 12pt, justified,
-% headings bold 14pt, sub-headings italic 12pt, captions 10pt, page numbers bottom centre.
+% Department guidelines: Times 12pt, justified, chapter and section headings bold 14pt,
+% sub-headings italic 12pt, captions 10pt, page numbers bottom centre.
 \onehalfspacing
 \captionsetup{font=small,labelfont=bf}
-\titleformat{\chapter}[display]{\normalfont\bfseries\centering}{\fontsize{14}{17}\selectfont CHAPTER \thechapter}{4pt}{\fontsize{14}{17}\selectfont\MakeUppercase}
+\titleformat{\chapter}[block]{\normalfont\fontsize{14}{17}\bfseries\centering}{CHAPTER \thechapter:}{0.4em}{\MakeUppercase}
 \titlespacing*{\chapter}{0pt}{0pt}{18pt}
 \titleformat{\section}{\normalfont\fontsize{14}{17}\bfseries}{\thesection}{0.6em}{}
 \titleformat{\subsection}{\normalfont\normalsize\itshape}{\thesubsection}{0.6em}{}
 \setlist{itemsep=2pt,topsep=4pt}
 \renewcommand{\contentsname}{Contents}
 \renewcommand{\bibname}{References}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
 
 \begin{document}
 
@@ -54,6 +53,8 @@
 {\large Recommender Systems Project Report}\\[0.3cm]
 {\large on}\\[0.6cm]
 {\fontsize{24}{29}\selectfont\bfseries \reporttitle\par}
+\vspace{0.2cm}
+{\fontsize{14}{17}\selectfont \reportsubtitle\par}
 \vspace{1cm}
 {\large Submitted to Manipal University Jaipur}\\[0.2cm]
 {\large Towards the partial fulfilment for the Award of the Degree of}\\[0.3cm]
@@ -76,32 +77,33 @@
 \pagenumbering{roman}
 
 % ---------------------------------------------------------------- Abstract
-\chapter*{Abstract}
-\addcontentsline{toc}{chapter}{Abstract}
+\chapter*{ABSTRACT}
+\addcontentsline{toc}{chapter}{ABSTRACT}
 
-News sites decide what millions of people read each day, but they rarely say why a story was picked. Most
-of them use models that are hard to inspect, so a reader cannot tell whether a recommendation came from
-their own history, from what is popular, or from something else. Our objective was to build a news
-recommender that ranks stories well using a reader's click history, chosen topics, reactions to earlier
-recommendations and direct feedback, and that can show the exact reasons behind each pick.
+News apps decide what people read, but they rarely say why a story was chosen. When the feed gets it
+wrong, the reader has no way to see the reason or correct it. The objective of this project is to build
+TopicLens, a news recommender that ranks stories from a reader's click history, chosen topics, reactions
+to earlier recommendations and direct feedback, and shows the exact reasons behind every pick.
 
-We used MIND-small, a public dataset of real, anonymised Microsoft News logs with 65,238 articles, 94,057
-users and 8.58 million candidate rows. From the article text we learned 30 topics with non-negative
-matrix factorisation and a 100-dimensional LSA text space, and built ten features for each user and
-article pair. We trained and compared fourteen rankers on the same split: simple rules, a KNN classifier,
-linear and kernel SVMs, a random forest, logistic regression, LightGBM LambdaRank, an NRMS-style neural
-model trained on a GPU, and a hybrid of LightGBM and the neural score.
+TopicLens is trained on MIND-small, a public dataset of real, anonymised Microsoft News logs with 65,238
+articles and 94,057 users. Topics are learned from the article text with non-negative matrix
+factorisation, and ten features are built for every reader and article pair. Fourteen models were
+trained and compared on the same time-based split, including KNN, linear and kernel SVMs, a random
+forest, logistic regression, LightGBM and a neural model trained on a GPU.
 
-On 73,152 test visits that the models never saw, the hybrid did best with an AUC of 66.60 and nDCG@10 of
-41.64. Logistic regression reached 63.84 AUC, level with LightGBM, the linear SVM and slightly above the
-neural model, while KNN reached only 55.66. The published BATM-NR model scores 68.13 AUC on the same data,
-so our best model is about 1.5 points behind it while using only titles and abstracts.
+On 73,152 test visits the models never saw, a hybrid of LightGBM and the neural model scored best with
+an AUC of 66.60. Logistic regression reached 63.84, level with LightGBM and the linear SVM, while KNN
+reached 55.66. The application uses the logistic regression, because its score splits exactly into
+reasons that can be shown to the reader.
 
-We built a web application, TopicLens, around the logistic regression because its score splits exactly into
-per-feature parts. Each recommendation shows a short reason and an optional breakdown, and readers can
-steer the feed with topic sliders, mutes and ``more/less like this''. Accounts, preferences and every click
-are stored in a Supabase Postgres database with row-level security. The results suggest that a simple,
-fully explainable model loses little accuracy against stronger black-box rankers on this task.
+The result is a working web application built with React and TypeScript, with sign-in and storage on
+Supabase. Every recommendation carries a one-line reason and an optional breakdown, and readers can
+steer the feed with topic sliders, mutes and ``more or less like this''. The project shows that a simple,
+fully explainable model gives up very little accuracy on this task.
+
+\medskip
+\noindent\textbf{Keywords:} news recommendation, explainable AI, MIND dataset, logistic regression,
+topic modelling, Supabase
 
 \clearpage
 \tableofcontents
@@ -112,236 +114,202 @@ fully explainable model loses little accuracy against stronger black-box rankers
 % ================================================================ Chapter 1
 \chapter{Introduction}
 
-\section{Motivation}
-Most people now get their news through a feed. The order of that feed is set by a recommender system that
-has learned from what readers clicked in the past. These systems are good at ranking, but they are opaque.
-A reader sees a story near the top and has no way of knowing whether it is there because of their own
-reading, because it is popular, or because it is new. If the feed goes wrong, for example by showing too
-much of one topic, there is usually no direct way to correct it.
+\section{Background and Motivation}
+Most people now read news through a feed, and the order of that feed is set by a recommender system
+trained on past clicks. These systems rank well, but they do not explain themselves. A reader cannot tell
+whether a story is at the top because of their own reading, because it is popular or because it is new.
+If the feed shows too much of one topic, there is usually no direct way to fix it.
 
-Research on explainable recommendation tries to fix this. Liu et al.\ \cite{liu2024} proposed BATM-NR, a
-neural news recommender that learns topics inside the model and uses them to explain its picks. Their work
-was our starting point. We wanted to see how far a simpler approach could go: learn topics from the text,
-feed them into a trained click model whose output can be split exactly into reasons, and give the reader
-controls that change the ranking straight away.
+Liu et al.\ \cite{liu2024} showed that topics learned from article text can be used to explain news
+recommendations. TopicLens takes that idea and pairs it with a trained click model whose score can be
+split exactly into its parts, so the explanation shown to the reader is the model's own reasoning and
+not an approximation of it.
 
-Applications of this kind of system include news portals, content apps and any feed where trust matters.
-The main advantage of an exact explanation is that it cannot disagree with the model, because it
-\emph{is} the model's score written out term by term.
+\section{Objectives of the Project}
+\begin{itemize}
+  \item Recommend news from four signals: reading and click history, preferred topics, interaction with
+        earlier recommendations and explicit feedback.
+  \item Train real machine learning models on a real dataset, including KNN and SVM, and compare them on
+        one fixed train and test split.
+  \item Pick a model that is accurate and whose score can be explained exactly.
+  \item Show a short reason for every recommendation, with a detailed breakdown on request.
+  \item Let readers sign in and keep their profile, preferences and history across devices.
+\end{itemize}
 
-\section{Project Statement and Objectives}
-The project statement is: \emph{recommend the most relevant news articles to each user from their reading
-and click history, their preferred topics, their interaction with earlier recommendations and their
-explicit feedback, and explain every recommendation.} Ranking comes first; the explanations support it.
+\section{Scope of the Work}
+In scope are: training and evaluating the models offline in Python; a web application with a ranked feed,
+explanations, topic controls and feedback buttons; a topic explorer; a page that compares the trained
+ranker with a simple baseline; and accounts with email, Google or guest sign-in.
 
-The objectives were:
-\begin{enumerate}
-  \item Use a real, public click dataset rather than synthetic data.
-  \item Train real machine learning models, including KNN and SVM, and compare them on one fixed train and
-        test split with standard ranking metrics.
-  \item Pick a model for the application that is accurate and whose score can be explained exactly.
-  \item Use four kinds of user signal: click history, chosen sections, skipped recommendations and explicit
-        feedback.
-  \item Build a working web application with sign-in and a database that stores each user's profile and
-        interactions.
-\end{enumerate}
+Out of scope are: live news (the articles are from the MIND dataset, collected in November 2019), a
+study with real users to measure trust, and running the neural model inside the browser.
+
+\section{Product Scenarios}
+\textbf{Scenario 1: A new reader.} Riya signs up with her email address and picks three sections she
+likes: sports, health and movies. The feed opens with stories from those sections near the top, each
+marked ``a section you chose''.
+
+\textbf{Scenario 2: Asking why.} Riya sees a finance story ranked third and opens ``Why am I seeing
+this?''. The panel shows that most of the score came from the story's popularity and its similarity to two
+articles she read earlier, which are listed by name.
+
+\textbf{Scenario 3: Pushing back.} She does not want finance news, so she drags the finance topic slider
+to zero. The feed reorders at once, and a log shows which stories left her top ten.
 
 \section{Organisation of the Report}
-Chapter~2 covers the background: the recommendation problem, the models we used and the tools. Chapter~3
-describes the dataset, the split, the features, the training of each model and the design of the
-application. Chapter~4 presents the results, discusses them and lists the limits of the work and what we
-would do next.
+Chapter~2 covers the requirements and the method used to build and evaluate the models. Chapter~3
+presents the system design: architecture, ranking model and database. Chapter~4 concludes the report and
+lists the limitations and future work.
 
 % ================================================================ Chapter 2
-\chapter{Background Material}
+\chapter{Requirement Analysis}
 
-\section{Conceptual Overview}
+\section{Functional Requirements}
+\begin{table}[H]
+\centering
+\caption{Functional requirements}
+\begin{tabularx}{\textwidth}{lL}
+\toprule
+ID & Requirement \\
+\midrule
+FR1 & A user can sign in with email and password, Google, or as a guest. \\
+FR2 & A new user picks the news sections they like. \\
+FR3 & The system shows a ranked feed of news stories for the user. \\
+FR4 & Every story in the feed shows a one-line reason and an optional detailed breakdown. \\
+FR5 & Opening a story counts as a click and updates the feed. \\
+FR6 & The user can mark a story ``more like this'', ``less like this'' or ``not interested''. \\
+FR7 & The user can raise, lower or mute any topic. \\
+FR8 & The user's profile, preferences and interactions are saved and restored at next sign-in. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\subsection{News recommendation as click prediction}
-In a news log, each \emph{impression} is one visit: a user, the list of articles they had clicked before,
-and a set of candidate articles shown to them, each marked clicked or not. A recommender gives every
-candidate a score, and the candidates are sorted by that score. A model is good if clicked articles end up
-near the top. This makes the task a mix of binary classification (click or not) and ranking within each
-impression.
+\section{Non-functional Requirements}
+\begin{table}[H]
+\centering
+\caption{Non-functional requirements}
+\begin{tabularx}{\textwidth}{lL}
+\toprule
+Type & Requirement \\
+\midrule
+Accuracy & The ranking model must clearly beat simple baselines on held-out data. \\
+Explainability & The reasons shown must add up exactly to the model's score. \\
+Speed & The feed must re-rank in under a second after any feedback. \\
+Privacy & A user can only read and change their own data. \\
+Cost & The system must run on free tiers and a single laptop GPU. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\subsection{Text representations}
-\textbf{TF-IDF} turns a headline and abstract into a sparse vector of word weights. \textbf{Latent semantic
-analysis (LSA)} applies a truncated SVD to the TF-IDF matrix and gives a dense vector in which similar
-articles lie close together \cite{deerwester1990}. \textbf{Non-negative matrix factorisation (NMF)} splits
-the TF-IDF matrix into a document-topic matrix and a topic-word matrix with no negative entries
-\cite{lee1999}. Because the weights are non-negative, each topic can be read as a list of words, which is
-why we use it for explanations.
+\section{Use Case Scenarios}
+The two main use cases are getting a recommendation with its reasons, and giving feedback.
+\begin{table}[H]
+\centering
+\caption{Use case: get and understand a recommendation}
+\begin{tabularx}{\textwidth}{lL}
+\toprule
+Actor & Reader \\
+Precondition & The reader is signed in and has picked sections. \\
+Main flow & 1. The system ranks all candidate stories for the reader. 2. The reader opens ``Why am I seeing
+this?'' on a story. 3. The system shows each signal's share of the score and the past reads behind it. \\
+Result & The reader knows why the story was picked. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Use case: give feedback}
+\begin{tabularx}{\textwidth}{lL}
+\toprule
+Actor & Reader \\
+Precondition & The feed is shown. \\
+Main flow & 1. The reader clicks ``less like this'' or lowers a topic slider. 2. The system updates the
+scores and re-ranks the feed. 3. The change is saved to the database. \\
+Result & The feed reflects the feedback, now and at the next sign-in. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Methodology}
+
+\subsection{Dataset}
+The project uses MIND-small \cite{wu2020}, released by Microsoft Research for non-commercial research. It
+has 65,238 news articles (title, abstract, category and subcategory), 94,057 anonymised users, 156,965
+training visits from 9 to 14 November 2019 and 73,152 test visits from 15 November 2019. Each visit lists
+the stories shown to a user and which ones they clicked. Only 4.05\% of shown stories were clicked, so the
+models are judged on ranking metrics rather than plain accuracy.
+
+\subsection{Train, validation and test split}
+The split follows time so that no model sees the future. Models were fitted on visits from 9 to 13
+November (126,695 visits), tuned on 14 November (30,270 visits) and tested once on the official test set
+from 15 November (73,152 visits).
 
 \subsection{Models compared}
-\begin{itemize}
-  \item \textbf{K-nearest neighbours (KNN)} predicts a click from the labels of the most similar training
-        rows in feature space.
-  \item \textbf{Support vector machines (SVM)} find a maximum-margin boundary. We used a linear SVM and an
-        RBF kernel SVM, with the kernel approximated by the Nystr\"om method so it fits in memory
-        \cite{williams2001}.
-  \item \textbf{Random forest} averages many decision trees trained on bootstrap samples \cite{breiman2001}.
-  \item \textbf{Logistic regression} models the click probability as $\sigma(b + \sum_j w_j z_j)$, where
-        $z_j$ are standardised features. Each term $w_j z_j$ is that feature's exact contribution.
-  \item \textbf{LightGBM LambdaRank} is a gradient-boosted tree model trained directly to improve the
-        ranking metric nDCG \cite{ke2017,burges2010}.
-  \item \textbf{NRMS} is a neural recommender that encodes each article and then encodes the user with
-        self-attention over their clicked articles \cite{wu2019}. The click score is the dot product of
-        the two vectors.
-\end{itemize}
+Each model scores every shown story, and stories are sorted by score. The models were simple rules
+(random, popularity, topic match, text match, category match), a KNN classifier ($k=50$), a linear SVM, a
+kernel SVM, a random forest, logistic regression, LightGBM LambdaRank \cite{ke2017}, an NRMS-style neural
+model \cite{wu2019} trained on an RTX 3050 GPU for 4 epochs, and a hybrid of LightGBM with the neural score
+as an extra feature.
 
-\subsection{Evaluation metrics}
-We used the four metrics from the MIND benchmark \cite{wu2020}, each computed per impression and then
-averaged:
-\begin{itemize}
-  \item \textbf{AUC}: the chance that a random clicked article is ranked above a random unclicked one in the
-        same impression. 50 is a coin flip.
-  \item \textbf{MRR}: the mean of $1/\text{rank}$ of the clicked articles, which rewards putting a click
-        near the top.
-  \item \textbf{nDCG@5 and nDCG@10}: how much of the ideal ranking quality is reached in the top 5 or 10
-        positions, with lower positions discounted.
-\end{itemize}
+\subsection{Evaluation}
+Four standard metrics were used \cite{wu2020}: AUC (how often a clicked story ranks above an unclicked
+one; 50 is a coin flip), MRR (how high the first click sits) and nDCG@5 and nDCG@10 (how good the top 5
+and top 10 are). Table~\ref{tab:results} shows the main results.
 
-\section{Technologies Involved}
-\begin{itemize}
-  \item \textbf{Python} with pandas, NumPy and scikit-learn for data processing, topic models and the
-        classic models \cite{pedregosa2011}; LightGBM for gradient boosting \cite{ke2017}.
-  \item \textbf{PyTorch} with CUDA and sentence-transformers (MiniLM) for the neural model, trained on an
-        NVIDIA RTX 3050 laptop GPU with 4\,GB of memory.
-  \item \textbf{React, TypeScript and Vite} for the web application. The trained logistic regression runs in
-        the browser.
-  \item \textbf{Supabase} (hosted PostgreSQL with authentication) for accounts and stored user data.
-  \item \textbf{Git and GitHub} for version control, with each feature committed separately.
-\end{itemize}
-
-% ================================================================ Chapter 3
-\chapter{Methodology}
-
-\section{Dataset}
-We used MIND-small \cite{wu2020,msnews}, released by Microsoft Research for non-commercial research. It contains
-logs from Microsoft News collected in November 2019. User ids are anonymised. Table~\ref{tab:data} gives
-the sizes.
-
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\caption{MIND-small at a glance}
-\label{tab:data}
-\begin{tabular}{lr}
+\caption{Results on the 73,152 test visits (higher is better)}
+\label{tab:results}
+\begin{tabular}{lcccc}
 \toprule
-Item & Count \\
+Model & AUC & MRR & nDCG@5 & nDCG@10 \\
 \midrule
-News articles (title, abstract, category, subcategory) & 65,238 \\
-Users & 94,057 \\
-Training impressions (9 to 14 Nov 2019) & 156,965 \\
-Test impressions (15 Nov 2019) & 73,152 \\
-Candidate rows (user, article, clicked or not) & 8,584,442 \\
-Click rate & 4.05\% \\
-Categories & 17 \\
+Random & 50.07 & 21.91 & 22.38 & 28.66 \\
+KNN classifier ($k=50$) & 55.66 & 25.97 & 27.85 & 34.00 \\
+Popularity & 58.61 & 27.24 & 28.66 & 34.73 \\
+Kernel SVM (RBF) & 60.40 & 27.86 & 30.27 & 36.82 \\
+Random forest & 61.79 & 29.26 & 31.95 & 38.15 \\
+Neural NRMS (GPU) & 63.14 & 29.75 & 32.20 & 38.64 \\
+Linear SVM & 63.74 & 30.56 & 33.52 & 39.59 \\
+LightGBM LambdaRank & 63.83 & 30.58 & 33.26 & 39.46 \\
+Logistic regression (used in app) & 63.84 & 30.56 & 33.54 & 39.61 \\
+\textbf{Hybrid: LightGBM + neural} & \textbf{66.60} & \textbf{32.05} & \textbf{35.47} & \textbf{41.64} \\
+\midrule
+BATM-NR, from \cite{liu2024} & 68.13 & 32.62 & 36.36 & 42.46 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Only about one candidate in 25 is clicked, so the classes are very unbalanced. This is one reason we
-report ranking metrics instead of plain accuracy: a model that predicts ``no click'' for everything would
-be 96\% accurate and useless.
+Logistic regression, the linear SVM and LightGBM finish within 0.1 AUC of each other, so the extra
+complexity of trees buys almost nothing here. KNN does poorly because only 4\% of rows are clicks, so most
+neighbours of any row are non-clicks. The hybrid is the most accurate, but it needs the neural encoder at
+run time and cannot be explained exactly, so the application uses logistic regression.
 
-\section{Train, Validation and Test Split}
-We split by time so that no model sees the future:
+% ================================================================ Chapter 3
+\chapter{System Design}
+
+\section{Design Goals}
 \begin{itemize}
-  \item \textbf{Fit set}: training impressions from 9 to 13 November (126,695 impressions).
-  \item \textbf{Validation set}: training impressions from 14 November (30,270 impressions), used for early
-        stopping and for picking the best epoch.
-  \item \textbf{Test set}: the official MIND-small dev set from 15 November (73,152 impressions). It was used
-        once per model, at the end.
+  \item \textbf{Recommendation first.} The feed is the main screen; explanations sit behind a single click.
+  \item \textbf{Honest explanations.} Every reason shown is a real part of the model's score.
+  \item \textbf{Instant feedback.} The model runs in the browser, so the feed re-ranks without a server
+        round trip.
+  \item \textbf{Simple to run.} One training script, static files and a managed database.
 \end{itemize}
-Every model in Table~\ref{tab:results} was trained on the fit set and scored on the same test set. 95\%
-confidence intervals come from 500 bootstrap resamples of the test impressions and are about $\pm0.2$
-points for every metric.
-
-\section{Topic and Text Models}
-Each article's title and abstract were turned into TF-IDF vectors. We then fitted:
-\begin{itemize}
-  \item NMF with $K=30$ topics, the value Liu et al.\ found best \cite{liu2024}. Each topic is described by
-        its top eight words and was given a short human-readable name.
-  \item LSA with 100 dimensions, used to measure how close an article's wording is to what the user has
-        read.
-\end{itemize}
-
-\section{Features}
-For every (user, candidate article) pair we computed ten features. Popularity features only use clicks
-from days \emph{before} the impression, so they do not leak the label.
-\begin{enumerate}
-  \item \textbf{Topic match}: similarity between the article's topic mix and the user's history.
-  \item \textbf{Text similarity}: LSA similarity between the article and the user's history.
-  \item \textbf{Category affinity}: share of the user's reads in the article's category.
-  \item \textbf{Subcategory affinity}: the same at subcategory level.
-  \item \textbf{Prior clicks}: clicks the article received on earlier days.
-  \item \textbf{Prior CTR}: click-through rate on earlier days.
-  \item \textbf{Exposure}: how many times it had been shown before.
-  \item \textbf{Freshness}: hours since the article first appeared.
-  \item \textbf{History length}: how many articles the user had read.
-  \item \textbf{Impression size}: how many articles were shown together.
-\end{enumerate}
-
-\section{Models and Training}
-\begin{itemize}
-  \item \textbf{Rule baselines}: random order, recent exposure, topic match only, text similarity only,
-        popularity only and category match only. These show how much each signal is worth alone.
-  \item \textbf{KNN classifier} with $k=50$ and distance weighting, fitted on 60,000 sampled rows.
-  \item \textbf{Linear SVM} ($C=0.05$, balanced class weights) on 400,000 sampled rows, and
-        \textbf{RBF kernel SVM} using 300 Nystr\"om components on 150,000 sampled rows.
-  \item \textbf{Random forest} with 200 trees of depth up to 14, on 400,000 sampled rows.
-\end{itemize}
-KNN and kernel methods do not scale to the full two million fit rows on a laptop, so these four models were
-fitted on random samples of the fit set. All of them were scored on every test row, and all use the same
-standardised features.
-\begin{itemize}
-  \item \textbf{Logistic regression} on standardised features. This is the model the application uses.
-  \item \textbf{LightGBM LambdaRank}, early-stopped on the validation day. The best iteration was 273.
-  \item \textbf{Neural NRMS-style model}. Articles are encoded with a MiniLM sentence embedding plus a
-        category embedding; the user encoder applies multi-head self-attention and additive attention over
-        the last 50 reads. It was trained with negative sampling (one click against four unclicked
-        articles from the same impression) on 189,519 clicks for 4 epochs, which took about 8 minutes on the
-        GPU. Validation AUC went 63.39, 63.39, 63.47, 63.50 over the four epochs and the last epoch was kept.
-  \item \textbf{Hybrid}: LightGBM with the neural score added as an eleventh feature (best iteration 227).
-\end{itemize}
-
-\section{How the Application Recommends}
-The application does not use KNN or SVM. They were trained for comparison. It ranks with the trained
-logistic regression, because its score is a plain sum:
-\begin{equation}
-  s(u,a) = b + \sum_{j=1}^{10} w_j\, z_j(u,a),
-\end{equation}
-where $z_j$ is the $j$-th standardised feature for user $u$ and article $a$. The application shows each term
-$w_j z_j$ as that reason's share of the score. The topic and text terms are further split across the
-history articles that produced them, so the reader sees which past reads led to a pick. Unit tests check
-that the parts add up to the score.
-
-The four kinds of signal from the project statement enter the score as follows:
-\begin{enumerate}
-  \item \textbf{Reading and click history}: opening a story counts as a click and is added to the history,
-        so all history-based features update at once.
-  \item \textbf{Preferred sections}: sections chosen at sign-up add $+2.0$ to the log-odds of articles in
-        those sections, shown as the reason ``a section you chose''.
-  \item \textbf{Interaction with earlier recommendations}: when a reader clicks a story, the stories ranked
-        above it that they passed over get a penalty of $0.5$ per pass, up to three passes. This is the
-        usual skip-above reading of click logs.
-  \item \textbf{Explicit feedback}: ``More like this'' and ``Less like this'', ``Not interested'', topic
-        sliders from $0\times$ to $2\times$ and topic mutes. Each change is logged with its effect on the top
-        ten.
-\end{enumerate}
 
 \section{System Architecture}
-Figure~\ref{fig:arch} shows the parts of the system. Training happens offline in Python. The training
-script exports the article data, the topic model and the logistic regression weights to JSON files, which
-the browser application loads. Sign-in and storage go through Supabase.
+Training happens offline in Python. The script exports the articles, the topic model and the model
+weights as JSON files, which the React application loads. Sign-in and storage go through Supabase
+(Figure~\ref{fig:arch}).
 
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}[
   box/.style={draw, rounded corners=2pt, align=center, minimum width=3.1cm, minimum height=1.1cm, font=\small},
   arr/.style={-{Stealth[length=2.2mm]}, thick}]
   \node[box] (mind) {MIND-small\\logs and articles};
-  \node[box, right=1.2cm of mind] (train) {Python training\\features, 14 models};
+  \node[box, right=1.2cm of mind] (train) {Python training\\features, models};
   \node[box, right=1.2cm of train] (json) {Exported JSON\\topics, weights};
   \node[box, below=1.4cm of json] (app) {React app\\ranking + reasons};
   \node[box, left=2.4cm of app] (db) {Supabase\\auth + Postgres};
@@ -357,149 +325,114 @@ the browser application loads. Sign-in and storage go through Supabase.
 \label{fig:arch}
 \end{figure}
 
-The database has three tables:
-\begin{itemize}
-  \item \texttt{profiles}: one row per user with display name, chosen sections and starting history.
-  \item \texttt{preferences}: topic sliders, mutes, liked, disliked and dismissed articles, and skip
-        counts.
-  \item \texttt{interactions}: an append-only log of every click, read, like, dislike, dismiss and skip,
-        with its time and rank.
-\end{itemize}
-Row-level security lets each user read and write only their own rows. Users can add to the interaction
-log but cannot edit or delete it. A trigger creates the profile and preference rows when someone signs
-up. Sign-in supports email and password, Google and anonymous guests.
-
-% ================================================================ Chapter 4
-\chapter{Results and Conclusions}
-
-\section{Results}
-Table~\ref{tab:results} lists every model on the 73,152 test impressions, sorted by AUC. The last row is
-copied from the BATM-NR paper \cite{liu2024} for reference; we did not re-run it.
-
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\caption{Ranking results on the MIND-small test set (all values $\times100$)}
-\label{tab:results}
-\begin{tabular}{lcccc}
+\caption{Technology stack}
+\begin{tabularx}{\textwidth}{lL}
 \toprule
-Model & AUC & MRR & nDCG@5 & nDCG@10 \\
+Layer & Technology \\
 \midrule
-Random & 50.07 & 21.91 & 22.38 & 28.66 \\
-Recent exposure & 51.69 & 23.00 & 24.40 & 30.47 \\
-Topic match (NMF) & 51.83 & 22.34 & 22.41 & 29.35 \\
-KNN classifier ($k=50$) & 55.66 & 25.97 & 27.85 & 34.00 \\
-Text similarity (LSA) & 56.03 & 25.61 & 26.89 & 33.39 \\
-Popularity (earlier days) & 58.61 & 27.24 & 28.66 & 34.73 \\
-Kernel SVM (RBF, Nystr\"om) & 60.40 & 27.86 & 30.27 & 36.82 \\
-Category match & 60.94 & 29.24 & 31.71 & 37.64 \\
-Random forest & 61.79 & 29.26 & 31.95 & 38.15 \\
-Neural NRMS (GPU) & 63.14 & 29.75 & 32.20 & 38.64 \\
-Linear SVM & 63.74 & 30.56 & 33.52 & 39.59 \\
-LightGBM LambdaRank & 63.83 & 30.58 & 33.26 & 39.46 \\
-Logistic regression (used in app) & 63.84 & 30.56 & 33.54 & 39.61 \\
-\textbf{Hybrid: LightGBM + neural score} & \textbf{66.60} & \textbf{32.05} & \textbf{35.47} & \textbf{41.64} \\
-\midrule
-BATM-NR (from \cite{liu2024}, not re-run) & 68.13 & 32.62 & 36.36 & 42.46 \\
+Machine learning & Python, pandas, scikit-learn \cite{pedregosa2011}, LightGBM, PyTorch with CUDA \\
+Front end & React, TypeScript, Vite \\
+Back end & Supabase: PostgreSQL, Auth, row-level security \\
+Version control & Git and GitHub \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-The features the trees used most were earlier-day CTR (15\% of total gain), article category (12\%),
-subcategory affinity (12\%), freshness (10\%) and text similarity (10\%).
+\section{Detailed Design}
 
-\section{Discussion}
-\textbf{Single signals are weak.} Topic match alone barely beats random (51.83), and text similarity
-alone reaches 56.03. Category match is the strongest single rule at 60.94. The trained models gain about
-three AUC points over that by combining the signals.
+\subsection{Topics and features}
+Each article's title and abstract are turned into TF-IDF vectors. Non-negative matrix factorisation
+finds 30 topics, each described by its top words, and a 100-dimensional LSA space measures how close two
+articles are in wording. For each reader and story, ten features are computed: topic match, text
+similarity, category share, subcategory share, earlier-day clicks, earlier-day click rate, times shown
+before, hours since publication, history length and number of stories shown together.
 
-\textbf{Linear models are as good as the trees here.} Logistic regression, the linear SVM and LightGBM all
-land within 0.1 AUC of each other, which is inside the confidence interval. With these ten features, most of
-the useful signal seems to be roughly linear. This is what made logistic regression the right choice for
-the application: we get the exact explanation for free.
+\subsection{Ranking and explanation}
+The application scores each story with the trained logistic regression:
+\begin{equation}
+  s(u,a) = b + \sum_{j=1}^{10} w_j\, z_j(u,a)
+\end{equation}
+where $z_j$ is the $j$-th standardised feature for reader $u$ and story $a$. Each term $w_j z_j$ is shown as
+that reason's share of the score, so the explanation adds up to the score by construction.
 
-\textbf{KNN and kernel SVM do worse.} KNN reached 55.66. With only 4\% positives, most of a row's 50
-neighbours are likely to be non-clicks, which makes its scores coarse, and it saw only 60,000 training
-rows. The kernel SVM (60.40) used an approximated kernel and a smaller sample than the linear SVM, and it
-fell below its linear version.
+\subsection{How the four signals are used}
+\begin{enumerate}
+  \item \textbf{Click history:} opening a story adds it to the history, which updates the history-based
+        features straight away.
+  \item \textbf{Preferred sections:} chosen sections add $+2.0$ to the score of matching stories.
+  \item \textbf{Earlier recommendations:} stories the reader skipped above a click lose $0.5$ per skip,
+        up to three skips.
+  \item \textbf{Explicit feedback:} more or less like this, not interested, topic sliders and mutes.
+\end{enumerate}
 
-\textbf{The neural model helps most as a feature.} On its own the NRMS-style model scored 63.14, a little
-below logistic regression. Added as a feature to LightGBM, it lifted AUC by 2.8 points to 66.60, our best
-result. The neural model reads the wording of the headlines, and the trees add popularity and freshness,
-which the neural model does not see. The hybrid is reported but not used in the app, because it needs the
-neural encoder at run time and its scores cannot be split exactly.
+\subsection{Database}
+\begin{table}[H]
+\centering
+\caption{Main database tables}
+\begin{tabularx}{\textwidth}{lL}
+\toprule
+Table & Contents \\
+\midrule
+profiles & Name, chosen sections and starting history for each user. \\
+preferences & Topic sliders, mutes, liked, disliked and hidden stories, skip counts. \\
+interactions & Append-only log of every click, read, like, dislike, dismiss and skip. \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\textbf{Gap to the paper.} Our best model is 1.53 AUC below BATM-NR. We used only titles and abstracts and
-a frozen sentence encoder, while BATM-NR trains its text encoder end to end.
+Row-level security lets each user see and change only their own rows, and the interaction log cannot be
+edited or deleted by users.
+
+% ================================================================ Chapter 4
+\chapter{Conclusion}
+
+\section{Conclusion}
+TopicLens recommends news from a reader's history, chosen sections, skipped stories and direct feedback,
+and explains every pick exactly. Of fourteen models tested on the same unseen data, the LightGBM and
+neural hybrid was the most accurate at 66.60 AUC. Logistic regression scored 63.84, as good as LightGBM
+and the linear SVM, and was chosen for the application because its reasons are exact.
 
 \section{Limitations}
 \begin{itemize}
-  \item We have not run a user study, so we cannot claim that the explanations or controls improve trust or
-        understanding. This is still a hypothesis.
-  \item MIND covers six days in 2019. In the app the ``news'' is from that period, and popularity and
-        freshness are computed relative to it.
-  \item The section boost ($+2.0$) and skip-above penalty ($0.5$) were set by hand, not learned from data.
+  \item The news is from November 2019, so the app is a demonstration, not a live news service.
+  \item The section boost and skip penalty were set by hand, not learned.
+  \item No user study has been run yet, so the effect of explanations on trust is not measured.
 \end{itemize}
 
-\section{Conclusions}
-We built TopicLens, a news recommender trained on real Microsoft News logs that uses click history, chosen
-sections, skipped recommendations and explicit feedback, and explains every pick exactly. Out of fourteen
-rankers tested on the same 73,152 unseen visits, the hybrid of LightGBM and a GPU-trained neural model was
-the most accurate (66.60 AUC). Logistic regression scored 63.84, matching LightGBM and the linear SVM, and
-we chose it for the application because its score breaks down into reasons with no approximation. KNN and
-the kernel SVM were clearly weaker on this data.
-
-For future work, we plan to run the user study described in our evaluation plan, learn the feedback
-weights from logged interactions instead of setting them by hand, and test whether a distilled version of
-the hybrid can keep exact explanations while closing part of the gap to BATM-NR.
+\section{Future Work}
+\begin{itemize}
+  \item Run a small user study comparing the feed with and without explanations.
+  \item Learn the feedback weights from the logged interactions.
+  \item Bring part of the hybrid's accuracy into the app while keeping explanations exact.
+\end{itemize}
 
 % ================================================================ References
-\begin{thebibliography}{99}
-\addcontentsline{toc}{chapter}{References}
+\begin{thebibliography}{9}
+\addcontentsline{toc}{chapter}{REFERENCES}
 \small\singlespacing
 
 \bibitem{liu2024}
 D. Liu, D. Greene, I. Li, X. Jiang and R. Dong, ``Topic-Centric Explanations for News Recommendation'',
 \emph{ACM Transactions on Recommender Systems}, vol.~3, no.~2, 2024, doi:10.1145/3680295.
 
-\bibitem{deerwester1990}
-S. Deerwester, S. T. Dumais, G. W. Furnas, T. K. Landauer and R. Harshman, ``Indexing by Latent Semantic
-Analysis'', \emph{Journal of the American Society for Information Science}, vol.~41, no.~6, 1990,
-pp.~391--407.
-
-\bibitem{lee1999}
-D. D. Lee and H. S. Seung, ``Learning the parts of objects by non-negative matrix factorization'',
-\emph{Nature}, vol.~401, 1999, pp.~788--791.
-
-\bibitem{williams2001}
-C. K. I. Williams and M. Seeger, ``Using the Nystr\"om Method to Speed Up Kernel Machines'', in
-\emph{Advances in Neural Information Processing Systems 13}, 2001.
-
-\bibitem{breiman2001}
-L. Breiman, ``Random Forests'', \emph{Machine Learning}, vol.~45, no.~1, 2001, pp.~5--32.
+\bibitem{wu2020}
+F. Wu, Y. Qiao, J.-H. Chen, C. Wu, T. Qi, J. Lian, D. Liu, X. Xie, J. Gao, W. Wu and M. Zhou,
+``MIND: A Large-scale Dataset for News Recommendation'', in \emph{Proceedings of the 58th Annual Meeting of
+the ACL}, 2020, pp.~3597--3606.
 
 \bibitem{ke2017}
 G. Ke, Q. Meng, T. Finley, T. Wang, W. Chen, W. Ma, Q. Ye and T.-Y. Liu, ``LightGBM: A Highly Efficient
 Gradient Boosting Decision Tree'', in \emph{Advances in Neural Information Processing Systems 30}, 2017.
 
-\bibitem{burges2010}
-C. J. C. Burges, ``From RankNet to LambdaRank to LambdaMART: An Overview'', Microsoft Research Technical
-Report MSR-TR-2010-82, 2010.
-
 \bibitem{wu2019}
 C. Wu, F. Wu, S. Ge, T. Qi, Y. Huang and X. Xie, ``Neural News Recommendation with Multi-Head
 Self-Attention'', in \emph{Proceedings of EMNLP-IJCNLP}, 2019, pp.~6389--6394.
 
-\bibitem{wu2020}
-F. Wu, Y. Qiao, J.-H. Chen, C. Wu, T. Qi, J. Lian, D. Liu, X. Xie, J. Gao, W. Wu and M. Zhou,
-``MIND: A Large-scale Dataset for News Recommendation'', in \emph{Proceedings of the 58th Annual Meeting of
-the Association for Computational Linguistics (ACL)}, 2020, pp.~3597--3606.
-
 \bibitem{pedregosa2011}
 F. Pedregosa et al., ``Scikit-learn: Machine Learning in Python'', \emph{Journal of Machine Learning
 Research}, vol.~12, 2011, pp.~2825--2830.
-
-\bibitem{msnews}
-MIND: Microsoft News Recommendation Dataset, msnews.github.io, last accessed 30 October 2026.
 
 \end{thebibliography}
 
