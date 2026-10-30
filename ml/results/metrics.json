@@ -1,0 +1,892 @@
+{
+ "dataset": {
+  "name": "MIND-small (Microsoft News Dataset)",
+  "citation": "Fangzhao Wu et al. 2020. MIND: A Large-scale Dataset for News Recommendation. ACL 2020.",
+  "url": "https://msnews.github.io/",
+  "license": "Microsoft Research License Terms (non-commercial research)",
+  "news": 65238,
+  "train_impressions": 156965,
+  "dev_impressions": 73152,
+  "users": 94057,
+  "candidate_rows": 8584442,
+  "click_rate": 0.0405,
+  "fit_impressions": 126695,
+  "validation_impressions": 30270
+ },
+ "protocol": "Fit on MIND-small train (last day held out for early stopping), evaluate on MIND-small dev. Metrics are averaged per impression; 95% CIs from 500 bootstrap resamples of dev impressions.",
+ "results": [
+  {
+   "model": "Random",
+   "impressions": 73152,
+   "auc": {
+    "mean": 50.07,
+    "ci95": [
+     49.86,
+     50.28
+    ]
+   },
+   "mrr": {
+    "mean": 21.91,
+    "ci95": [
+     21.74,
+     22.09
+    ]
+   },
+   "ndcg5": {
+    "mean": 22.38,
+    "ci95": [
+     22.17,
+     22.6
+    ]
+   },
+   "ndcg10": {
+    "mean": 28.66,
+    "ci95": [
+     28.45,
+     28.88
+    ]
+   }
+  },
+  {
+   "model": "Popularity (earlier-day clicks)",
+   "impressions": 73152,
+   "auc": {
+    "mean": 58.61,
+    "ci95": [
+     58.4,
+     58.82
+    ]
+   },
+   "mrr": {
+    "mean": 27.24,
+    "ci95": [
+     27.05,
+     27.43
+    ]
+   },
+   "ndcg5": {
+    "mean": 28.66,
+    "ci95": [
+     28.42,
+     28.91
+    ]
+   },
+   "ndcg10": {
+    "mean": 34.73,
+    "ci95": [
+     34.51,
+     34.95
+    ]
+   }
+  },
+  {
+   "model": "Recent exposure",
+   "impressions": 73152,
+   "auc": {
+    "mean": 51.69,
+    "ci95": [
+     51.47,
+     51.9
+    ]
+   },
+   "mrr": {
+    "mean": 23.0,
+    "ci95": [
+     22.8,
+     23.19
+    ]
+   },
+   "ndcg5": {
+    "mean": 24.4,
+    "ci95": [
+     24.17,
+     24.61
+    ]
+   },
+   "ndcg10": {
+    "mean": 30.47,
+    "ci95": [
+     30.23,
+     30.66
+    ]
+   }
+  },
+  {
+   "model": "Category match",
+   "impressions": 73152,
+   "auc": {
+    "mean": 60.94,
+    "ci95": [
+     60.75,
+     61.14
+    ]
+   },
+   "mrr": {
+    "mean": 29.24,
+    "ci95": [
+     29.03,
+     29.45
+    ]
+   },
+   "ndcg5": {
+    "mean": 31.71,
+    "ci95": [
+     31.47,
+     31.97
+    ]
+   },
+   "ndcg10": {
+    "mean": 37.64,
+    "ci95": [
+     37.43,
+     37.88
+    ]
+   }
+  },
+  {
+   "model": "Text similarity (LSA)",
+   "impressions": 73152,
+   "auc": {
+    "mean": 56.03,
+    "ci95": [
+     55.81,
+     56.25
+    ]
+   },
+   "mrr": {
+    "mean": 25.61,
+    "ci95": [
+     25.39,
+     25.82
+    ]
+   },
+   "ndcg5": {
+    "mean": 26.89,
+    "ci95": [
+     26.62,
+     27.14
+    ]
+   },
+   "ndcg10": {
+    "mean": 33.39,
+    "ci95": [
+     33.15,
+     33.61
+    ]
+   }
+  },
+  {
+   "model": "Topic match (NMF)",
+   "impressions": 73152,
+   "auc": {
+    "mean": 51.83,
+    "ci95": [
+     51.65,
+     52.05
+    ]
+   },
+   "mrr": {
+    "mean": 22.34,
+    "ci95": [
+     22.14,
+     22.54
+    ]
+   },
+   "ndcg5": {
+    "mean": 22.41,
+    "ci95": [
+     22.18,
+     22.64
+    ]
+   },
+   "ndcg10": {
+    "mean": 29.35,
+    "ci95": [
+     29.12,
+     29.57
+    ]
+   }
+  },
+  {
+   "model": "Logistic regression",
+   "impressions": 73152,
+   "auc": {
+    "mean": 63.84,
+    "ci95": [
+     63.62,
+     64.05
+    ]
+   },
+   "mrr": {
+    "mean": 30.56,
+    "ci95": [
+     30.33,
+     30.78
+    ]
+   },
+   "ndcg5": {
+    "mean": 33.54,
+    "ci95": [
+     33.25,
+     33.79
+    ]
+   },
+   "ndcg10": {
+    "mean": 39.61,
+    "ci95": [
+     39.37,
+     39.83
+    ]
+   }
+  },
+  {
+   "model": "KNN classifier (k=50)",
+   "impressions": 73152,
+   "auc": {
+    "mean": 55.66,
+    "ci95": [
+     55.42,
+     55.9
+    ]
+   },
+   "mrr": {
+    "mean": 25.97,
+    "ci95": [
+     25.78,
+     26.17
+    ]
+   },
+   "ndcg5": {
+    "mean": 27.85,
+    "ci95": [
+     27.61,
+     28.1
+    ]
+   },
+   "ndcg10": {
+    "mean": 34.0,
+    "ci95": [
+     33.78,
+     34.22
+    ]
+   }
+  },
+  {
+   "model": "Linear SVM",
+   "impressions": 73152,
+   "auc": {
+    "mean": 63.74,
+    "ci95": [
+     63.51,
+     63.96
+    ]
+   },
+   "mrr": {
+    "mean": 30.56,
+    "ci95": [
+     30.34,
+     30.79
+    ]
+   },
+   "ndcg5": {
+    "mean": 33.52,
+    "ci95": [
+     33.24,
+     33.77
+    ]
+   },
+   "ndcg10": {
+    "mean": 39.59,
+    "ci95": [
+     39.35,
+     39.82
+    ]
+   }
+  },
+  {
+   "model": "Kernel SVM (RBF, Nystroem)",
+   "impressions": 73152,
+   "auc": {
+    "mean": 60.4,
+    "ci95": [
+     60.21,
+     60.64
+    ]
+   },
+   "mrr": {
+    "mean": 27.86,
+    "ci95": [
+     27.63,
+     28.08
+    ]
+   },
+   "ndcg5": {
+    "mean": 30.27,
+    "ci95": [
+     30.02,
+     30.54
+    ]
+   },
+   "ndcg10": {
+    "mean": 36.82,
+    "ci95": [
+     36.58,
+     37.05
+    ]
+   }
+  },
+  {
+   "model": "Random forest",
+   "impressions": 73152,
+   "auc": {
+    "mean": 61.79,
+    "ci95": [
+     61.56,
+     61.99
+    ]
+   },
+   "mrr": {
+    "mean": 29.26,
+    "ci95": [
+     29.07,
+     29.49
+    ]
+   },
+   "ndcg5": {
+    "mean": 31.95,
+    "ci95": [
+     31.71,
+     32.22
+    ]
+   },
+   "ndcg10": {
+    "mean": 38.15,
+    "ci95": [
+     37.94,
+     38.39
+    ]
+   }
+  },
+  {
+   "model": "LightGBM LambdaRank",
+   "impressions": 73152,
+   "auc": {
+    "mean": 63.83,
+    "ci95": [
+     63.61,
+     64.04
+    ]
+   },
+   "mrr": {
+    "mean": 30.58,
+    "ci95": [
+     30.37,
+     30.8
+    ]
+   },
+   "ndcg5": {
+    "mean": 33.26,
+    "ci95": [
+     33.02,
+     33.51
+    ]
+   },
+   "ndcg10": {
+    "mean": 39.46,
+    "ci95": [
+     39.24,
+     39.7
+    ]
+   }
+  },
+  {
+   "model": "Neural NRMS (GPU, MiniLM news encoder)",
+   "impressions": 73152,
+   "auc": {
+    "mean": 63.14,
+    "ci95": [
+     62.92,
+     63.37
+    ]
+   },
+   "mrr": {
+    "mean": 29.75,
+    "ci95": [
+     29.51,
+     29.97
+    ]
+   },
+   "ndcg5": {
+    "mean": 32.2,
+    "ci95": [
+     31.94,
+     32.46
+    ]
+   },
+   "ndcg10": {
+    "mean": 38.64,
+    "ci95": [
+     38.4,
+     38.87
+    ]
+   }
+  },
+  {
+   "model": "Hybrid: LightGBM + neural score",
+   "impressions": 73152,
+   "auc": {
+    "mean": 66.6,
+    "ci95": [
+     66.39,
+     66.79
+    ]
+   },
+   "mrr": {
+    "mean": 32.05,
+    "ci95": [
+     31.83,
+     32.29
+    ]
+   },
+   "ndcg5": {
+    "mean": 35.47,
+    "ci95": [
+     35.23,
+     35.75
+    ]
+   },
+   "ndcg10": {
+    "mean": 41.64,
+    "ci95": [
+     41.43,
+     41.88
+    ]
+   }
+  }
+ ],
+ "lightgbm": {
+  "best_iteration": 273,
+  "importance": [
+   {
+    "feature": "prior_ctr",
+    "label": "Click-through rate on earlier days (smoothed)",
+    "gain_share": 0.1862
+   },
+   {
+    "feature": "category",
+    "label": "Article category",
+    "gain_share": 0.1504
+   },
+   {
+    "feature": "subcat_affinity",
+    "label": "Share of your reads in this subcategory",
+    "gain_share": 0.1267
+   },
+   {
+    "feature": "text_sim",
+    "label": "Text similarity to your history (LSA embedding)",
+    "gain_share": 0.1067
+   },
+   {
+    "feature": "impression_size",
+    "label": "Number of articles shown together (log)",
+    "gain_share": 0.0964
+   },
+   {
+    "feature": "hours_since_first_seen",
+    "label": "Hours since the article first appeared (log)",
+    "gain_share": 0.091
+   },
+   {
+    "feature": "cat_affinity",
+    "label": "Share of your reads in this category",
+    "gain_share": 0.0611
+   },
+   {
+    "feature": "exposure_before",
+    "label": "Times shown to anyone before now (log)",
+    "gain_share": 0.059
+   },
+   {
+    "feature": "prior_clicks",
+    "label": "Clicks on this article on earlier days (log)",
+    "gain_share": 0.054
+   },
+   {
+    "feature": "hist_len",
+    "label": "How much history you have (log)",
+    "gain_share": 0.0395
+   },
+   {
+    "feature": "topic_sim",
+    "label": "Topic match with your history (NMF topics)",
+    "gain_share": 0.029
+   }
+  ]
+ },
+ "logistic_regression": {
+  "coefficients": [
+   {
+    "feature": "impression_size",
+    "label": "Number of articles shown together (log)",
+    "weight": -0.6284
+   },
+   {
+    "feature": "text_sim",
+    "label": "Text similarity to your history (LSA embedding)",
+    "weight": 0.279
+   },
+   {
+    "feature": "subcat_affinity",
+    "label": "Share of your reads in this subcategory",
+    "weight": 0.2056
+   },
+   {
+    "feature": "prior_ctr",
+    "label": "Click-through rate on earlier days (smoothed)",
+    "weight": 0.2055
+   },
+   {
+    "feature": "hours_since_first_seen",
+    "label": "Hours since the article first appeared (log)",
+    "weight": -0.1115
+   },
+   {
+    "feature": "cat_affinity",
+    "label": "Share of your reads in this category",
+    "weight": 0.0399
+   },
+   {
+    "feature": "hist_len",
+    "label": "How much history you have (log)",
+    "weight": 0.0269
+   },
+   {
+    "feature": "prior_clicks",
+    "label": "Clicks on this article on earlier days (log)",
+    "weight": 0.0261
+   },
+   {
+    "feature": "topic_sim",
+    "label": "Topic match with your history (NMF topics)",
+    "weight": 0.0241
+   },
+   {
+    "feature": "exposure_before",
+    "label": "Times shown to anyone before now (log)",
+    "weight": 0.0124
+   }
+  ],
+  "intercept": -0.348
+ },
+ "topics": [
+  [
+   "season",
+   "team",
+   "games",
+   "nba",
+   "coach",
+   "win",
+   "start",
+   "basketball"
+  ],
+  [
+   "police",
+   "shooting",
+   "shot",
+   "said",
+   "say",
+   "officer",
+   "woman",
+   "officers"
+  ],
+  [
+   "trump",
+   "president",
+   "donald",
+   "ukraine",
+   "syria",
+   "says",
+   "white",
+   "administration"
+  ],
+  [
+   "weather",
+   "today",
+   "forecast",
+   "week",
+   "history",
+   "snow",
+   "louis",
+   "st"
+  ],
+  [
+   "apartments",
+   "curious",
+   "dollar",
+   "rent",
+   "amenities",
+   "goes",
+   "estate",
+   "locally"
+  ],
+  [
+   "time",
+   "make",
+   "know",
+   "just",
+   "things",
+   "years",
+   "need",
+   "don"
+  ],
+  [
+   "school",
+   "high",
+   "students",
+   "student",
+   "schools",
+   "district",
+   "county",
+   "bus"
+  ],
+  [
+   "world",
+   "series",
+   "astros",
+   "nationals",
+   "washington",
+   "houston",
+   "yankees",
+   "game"
+  ],
+  [
+   "year",
+   "old",
+   "girl",
+   "boy",
+   "missing",
+   "family",
+   "mother",
+   "woman"
+  ],
+  [
+   "news",
+   "links",
+   "headlines",
+   "trending",
+   "articles",
+   "readers",
+   "local",
+   "recent"
+  ],
+  [
+   "new",
+   "york",
+   "orleans",
+   "jersey",
+   "jets",
+   "restaurant",
+   "giants",
+   "england"
+  ],
+  [
+   "week",
+   "10",
+   "colts",
+   "11",
+   "bye",
+   "vs",
+   "rankings",
+   "picks"
+  ],
+  [
+   "state",
+   "michigan",
+   "penn",
+   "ohio",
+   "florida",
+   "iowa",
+   "saturday",
+   "university"
+  ],
+  [
+   "crash",
+   "car",
+   "driver",
+   "road",
+   "killed",
+   "vehicle",
+   "highway",
+   "near"
+  ],
+  [
+   "2019",
+   "november",
+   "october",
+   "sports",
+   "awards",
+   "20",
+   "stars",
+   "friday"
+  ],
+  [
+   "city",
+   "kansas",
+   "council",
+   "mayor",
+   "oklahoma",
+   "chiefs",
+   "york",
+   "businesses"
+  ],
+  [
+   "best",
+   "photos",
+   "spots",
+   "ratings",
+   "businesses",
+   "rundown",
+   "crunched",
+   "hoodline"
+  ],
+  [
+   "impeachment",
+   "house",
+   "inquiry",
+   "public",
+   "hearings",
+   "democrats",
+   "hearing",
+   "ukraine"
+  ],
+  [
+   "nfl",
+   "trade",
+   "teams",
+   "deadline",
+   "kaepernick",
+   "bengals",
+   "colin",
+   "team"
+  ],
+  [
+   "patriots",
+   "england",
+   "brady",
+   "tom",
+   "ravens",
+   "belichick",
+   "baltimore",
+   "gordon"
+  ],
+  [
+   "day",
+   "veterans",
+   "monday",
+   "parade",
+   "sports",
+   "military",
+   "veteran",
+   "photos"
+  ],
+  [
+   "game",
+   "vs",
+   "win",
+   "night",
+   "sunday",
+   "cowboys",
+   "watch",
+   "eagles"
+  ],
+  [
+   "california",
+   "snow",
+   "area",
+   "cold",
+   "power",
+   "winds",
+   "storm",
+   "morning"
+  ],
+  [
+   "steelers",
+   "browns",
+   "cleveland",
+   "pittsburgh",
+   "garrett",
+   "myles",
+   "rudolph",
+   "ohio"
+  ],
+  [
+   "2020",
+   "democratic",
+   "presidential",
+   "race",
+   "warren",
+   "biden",
+   "election",
+   "joe"
+  ],
+  [
+   "man",
+   "county",
+   "arrested",
+   "charged",
+   "murder",
+   "sheriff",
+   "death",
+   "accused"
+  ],
+  [
+   "home",
+   "adoption",
+   "family",
+   "pet",
+   "listings",
+   "woman",
+   "centers",
+   "house"
+  ],
+  [
+   "football",
+   "college",
+   "playoff",
+   "lsu",
+   "teams",
+   "rankings",
+   "alabama",
+   "coach"
+  ],
+  [
+   "look",
+   "like",
+   "apartment",
+   "end",
+   "days",
+   "does",
+   "low",
+   "rental"
+  ],
+  [
+   "injury",
+   "report",
+   "chiefs",
+   "mahomes",
+   "patrick",
+   "practice",
+   "vikings",
+   "broncos"
+  ]
+ ],
+ "paper_reference": {
+  "model": "BATM-NR (Liu et al., 2024, Table 5)",
+  "auc": 68.13,
+  "mrr": 32.62,
+  "ndcg5": 36.36,
+  "ndcg10": 42.46
+ },
+ "runtime_seconds": 279
+}

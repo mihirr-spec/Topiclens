@@ -1,0 +1,59 @@
+{
+ "result": {
+  "model": "Neural NRMS (GPU, MiniLM news encoder)",
+  "impressions": 73152,
+  "auc": {
+   "mean": 63.14,
+   "ci95": [
+    62.92,
+    63.36
+   ]
+  },
+  "mrr": {
+   "mean": 29.75,
+   "ci95": [
+    29.52,
+    29.98
+   ]
+  },
+  "ndcg5": {
+   "mean": 32.2,
+   "ci95": [
+    31.93,
+    32.43
+   ]
+  },
+  "ndcg10": {
+   "mean": 38.64,
+   "ci95": [
+    38.39,
+    38.86
+   ]
+  }
+ },
+ "training": [
+  {
+   "epoch": 1,
+   "loss": 1.436,
+   "val_auc": 63.39
+  },
+  {
+   "epoch": 2,
+   "loss": 1.3894,
+   "val_auc": 63.39
+  },
+  {
+   "epoch": 3,
+   "loss": 1.3735,
+   "val_auc": 63.47
+  },
+  {
+   "epoch": 4,
+   "loss": 1.3632,
+   "val_auc": 63.5
+  }
+ ],
+ "device": "NVIDIA GeForce RTX 3050 A Laptop GPU",
+ "runtime_seconds": 497,
+ "clicks_trained_on": 189519
+}

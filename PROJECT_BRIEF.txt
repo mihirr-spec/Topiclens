@@ -1,0 +1,208 @@
+TOPICLENS - PROJECT BRIEF (for design)
+=======================================
+Last updated: 30 Oct 2026
+Copy deck (editable, section by section): https://claude.ai/artifact/MckSDdQBWKuY6x2DLRDu4H
+
+
+1. ONE-LINE SUMMARY
+-------------------
+TopicLens is an explainable news recommender: a trained machine-learning model
+picks news stories for you, and every pick shows exactly why it was chosen,
+so you can push back and reshape your feed.
+
+Tagline options:
+  - A news feed that shows its working.
+  - Recommendations you can argue with.
+  - Every pick comes with its reasons.
+
+
+2. WHAT IT IS
+-------------
+- A university research project (not a commercial news app).
+- Built on the paper: Liu, Greene, Li, Jiang & Dong (2024),
+  "Topic-Centric Explanations for News Recommendation", ACM Transactions on
+  Recommender Systems 3(2). https://doi.org/10.1145/3680295
+- Trained and tested on MIND, the Microsoft News Dataset: real, anonymised
+  logs of what people were shown on Microsoft News and what they clicked.
+- Runs in the browser. No server; your profile stays on your device.
+
+
+3. THE PROBLEM IT SOLVES
+------------------------
+News apps decide what you read, but never say why. Their models are black
+boxes, which makes them hard to trust and impossible to correct.
+TopicLens shows the reasons behind every recommendation and lets you change
+them (more / less like this, topic sliders, mutes), with a log of what changed.
+
+
+4. WHO IT'S FOR
+---------------
+- Curious readers tired of black-box feeds: see the reasons, steer the feed.
+- Students learning recommender systems: a working end-to-end example (data,
+  features, models, metrics).
+- Researchers in explainable AI: explanations that are exact score breakdowns.
+- Reviewers / examiners: every number is labelled as measured, from the
+  paper, or not yet evaluated.
+
+
+5. HOW IT WORKS (user-facing, 5 steps)
+--------------------------------------
+1. Tell us what you read - pick a few sections, or start as a demo reader.
+2. Topics are learned from the text - the system finds themes in thousands
+   of real headlines on its own.
+3. A trained model predicts your clicks - learned from ~157,000 real visits
+   to Microsoft News.
+4. Every pick explains itself - "Why am I seeing this?" splits the score into
+   its parts, shows the past reads behind it and the words that matched.
+5. You push back, it adapts - More / Less like this, sliders and mutes change
+   the feed at once; every change to your top 10 is logged.
+
+
+6. THE DATA (MIND-small)
+------------------------
+Source: Wu et al. (2020), "MIND: A Large-scale Dataset for News
+Recommendation", ACL 2020. https://msnews.github.io/
+License: Microsoft Research License (non-commercial research use).
+
+  News articles ............ 65,238  (title, abstract, category, subcategory)
+  Users .................... 94,057  (anonymised ids)
+  Training visits .......... 156,965 (9-14 Nov 2019)
+  Test (dev) visits ........ 73,152  (15 Nov 2019)
+  Candidate articles shown . 8.58 million (4.05% clicked)
+  Categories ............... news, sports, finance, lifestyle, health, travel,
+                             foodanddrink, entertainment, music, movies, tv,
+                             video, weather, autos, kids, middleeast, northamerica
+
+
+7. THE MODELS
+-------------
+All trained on the training visits, tested on 73,152 visits never seen.
+
+a) LightGBM LambdaRank (gradient-boosted trees) - main feature-based ranker.
+b) Logistic regression - fully explainable: score = sum of
+   (weight x feature), so each pick splits exactly into its reasons.
+c) Neural NRMS-style recommender, trained on the GPU (RTX 3050):
+   - news encoder: MiniLM sentence embedding + category embedding
+   - user encoder: self-attention over your last 50 reads
+   - trained on 189,519 clicks, 4 epochs, ~8 minutes
+d) Hybrid: LightGBM using the neural score as an extra feature.
+e) Classic ML models on the same features: KNN classifier (k=50), linear SVM,
+   kernel SVM (RBF via Nystroem approximation), random forest (200 trees).
+
+Features the models use (plain-language labels for the UI):
+  - Topic match with your history
+  - Text similarity to your history
+  - Share of your reads in this category / subcategory
+  - Click-through rate on earlier days (popularity)
+  - Times shown to anyone before now
+  - Hours since the article first appeared (freshness)
+  - How much history you have
+  - Number of articles shown together
+
+What the trees rely on most: earlier-day CTR (15%), article category (12%),
+subcategory affinity (12%), freshness (10%), text similarity (10%).
+
+
+8. RESULTS (measured on 73,152 unseen visits; 95% CI about +/-0.2)
+-------------------------------------------------------------------
+Model                                    AUC    MRR    nDCG@5  nDCG@10
+Random                                   50.07  21.91  22.38   28.66
+Recent exposure                          51.69  23.00  24.40   30.47
+Topic match (NMF)                        51.83  22.34  22.41   29.35
+KNN classifier (k=50)                    55.66  25.97  27.85   34.00
+Text similarity (LSA)                    56.03  25.61  26.89   33.39
+Popularity (earlier-day clicks)          58.61  27.24  28.66   34.73
+Kernel SVM (RBF, Nystroem)               60.40  27.86  30.27   36.82
+Category match                           60.94  29.24  31.71   37.64
+Random forest                            61.79  29.26  31.95   38.15
+Neural NRMS (GPU, MiniLM news encoder)   63.14  29.75  32.20   38.64
+Linear SVM                               63.74  30.56  33.52   39.59
+LightGBM LambdaRank                      63.83  30.58  33.26   39.46
+Logistic regression                      63.84  30.56  33.54   39.61
+Hybrid: LightGBM + neural score          66.60  32.05  35.47   41.64
+Paper's model (BATM-NR, Table 5)         68.13  32.62  36.36   42.46   <- from the paper, not re-run
+
+The app ranks with the logistic regression (every pick splits exactly into its reasons).
+The hybrid is the most accurate model; it needs the neural encoder, so it is reported, not run in the browser.
+
+Metric meanings (for tooltips):
+  AUC      how often a clicked story ranks above an unclicked one (50 = coin flip)
+  MRR      how high the first clicked story sits, on average
+  nDCG@k   how much of the good stuff lands in the top k
+
+
+9. PAGES TO DESIGN
+------------------
+A. Landing page (logged out)
+   1. Nav: logo, How it works, Results, Data, Demo, [Sign in]
+   2. Hero: headline + subtext + [Sign in] [Try a demo]; visual = tilted
+      mosaic of real news "front page" cards (photo + category + headline)
+   3. Who it's for (4 audiences)
+   4. How it works (5 steps)
+   5. What makes it different (bento: exact explanations / learned topics /
+      you can push back / measured not claimed)
+   6. Results (table + "what the model listens to" chart)
+   7. The data (stats band + citation)
+   8. Sign in + demo readers (Google / email / guest; 3 demo personas)
+   9. FAQ
+  10. Footer (paper + dataset credits, image credits)
+
+B. Sign-in / onboarding
+   - Sign in card: Continue with Google, Continue with email, Continue as guest
+   - Interest picker: "What do you like to read?" pick 2-5 categories
+
+C. Dashboard (logged in) - "For you"
+   - Top bar: tabs (For you, Topics, Compare, Results, About), avatar, sign out
+   - Greeting: "Good evening, <name>." + number of new picks + top topics
+   - Feed cards: rank, match %, category, image, headline, summary, topic
+     chips, one-line "Why", actions (More / Less / Not interested / Mark read /
+     Why am I seeing this?)
+   - Expanded Why panel: score split by signal (bars to 100%), past reads
+     behind it, matched words highlighted, "what this doesn't know"
+   - Sidebar: Your taste, Recently read, Hidden, What changed, How your feed
+     is ranked (model card)
+
+D. Topics (Topic Explorer): every learned topic with top words, your share,
+   0x-2x slider, mute toggle, reset.
+E. Compare: baseline vs TopicLens rankings side by side.
+F. Results: full metrics table with confidence intervals, feature importance.
+G. About: the paper, what's inherited vs new, limitations.
+
+
+10. DESIGN DIRECTION (newsprint sketchbook)
+--------------------------------------------
+- Mood: hand-drawn notes on newsprint. Off-white newspaper-texture
+  background (public/paper.png), black ink, one blue ink accent (#2449c4).
+- Type: Caveat Brush for headings and the wordmark, Patrick Hand for
+  handwritten body text, Domine (newspaper serif) for article headlines.
+- Paper cards with torn edges and a soft drop shadow, slightly rotated.
+- Black-and-white (grayscale) news photos inside "clipping" cards.
+- Doodles: circled words ("shows its (working.)"), scribbled underlines,
+  curved arrows, crown / star / spark marks, ink-blob step numbers,
+  "= TopicLens =" wordmark with ink rays.
+- Buttons: solid black brush button (primary), hand-drawn outline (secondary).
+- Sections follow the three mockups: Landing hero, Who it's for (4 cards,
+  blue ink), How it works (5-step zigzag with dotted path).
+
+
+11. VOICE & COPY RULES
+----------------------
+- Plain, specific, honest. Numbers instead of adjectives.
+- Never claim accuracy we haven't measured.
+- No em dashes; short sentences.
+
+
+12. CREDITS TO SHOW
+-------------------
+- Paper: Liu et al. 2024, ACM TORS, doi:10.1145/3680295
+- Data: Wu et al. 2020, MIND, msnews.github.io (Microsoft Research License)
+- Photos: Wikimedia Commons (per-image author and license)
+
+
+13. TECH (for reference)
+------------------------
+- Front end: React + TypeScript + Vite, plain CSS, Geist font, Phosphor icons
+- ML: Python (pandas, scikit-learn, LightGBM), PyTorch + CUDA for the neural model
+- Training scripts: ml/train.py (features, LightGBM, logistic regression,
+  baselines), ml/train_neural.py (GPU model)
+- Results: ml/results/metrics.json
