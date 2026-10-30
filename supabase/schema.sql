@@ -6,6 +6,7 @@
 -- interactions  append-only log: every click, read, like, dislike, dismiss and skip, with time and rank
 --
 -- Row-level security: every user can read and write only their own rows.
+-- Policies use (select auth.uid()) so Postgres evaluates it once per query, not once per row.
 
 create table if not exists public.profiles (
   id            uuid primary key references auth.users (id) on delete cascade,
@@ -50,14 +51,14 @@ drop policy if exists "read own interactions"   on public.interactions;
 drop policy if exists "insert own interactions" on public.interactions;
 
 create policy "own profile" on public.profiles
-  for all using (auth.uid() = id) with check (auth.uid() = id);
+  for all using ((select auth.uid()) = id) with check ((select auth.uid()) = id);
 create policy "own preferences" on public.preferences
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  for all using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 -- The interaction log is append-only for users: they can read and add, not edit or delete.
 create policy "read own interactions" on public.interactions
-  for select using (auth.uid() = user_id);
+  for select using ((select auth.uid()) = user_id);
 create policy "insert own interactions" on public.interactions
-  for insert with check (auth.uid() = user_id);
+  for insert with check ((select auth.uid()) = user_id);
 
 -- Create the profile and preferences rows when a user signs up (email, Google or anonymous guest).
 create or replace function public.handle_new_user()
@@ -82,3 +83,6 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- The trigger function runs with elevated rights; nobody should call it directly through the API.
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
