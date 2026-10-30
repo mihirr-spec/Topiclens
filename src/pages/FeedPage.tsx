@@ -1,9 +1,9 @@
-import { useCallback, useState } from "react";
-import { ArticleCard, ArticleReader } from "../components/ArticleCard";
+import { useState } from "react";
+import { ArticleCard } from "../components/ArticleCard";
 import { EmptyState, Evidence, pct } from "../components/shared";
 import { useLens } from "../context";
 import { ARTICLE_BY_ID, CATEGORIES, categoryName, TOPICS } from "../data/mind";
-import type { HiddenReason, Recommendation } from "../engine/model";
+import type { HiddenReason } from "../engine/model";
 
 const TOP_K = [5, 10, 20];
 
@@ -13,11 +13,8 @@ function greeting(): string {
 }
 
 export function FeedPage() {
-  const { result, userName, dispatch } = useLens();
+  const { result, user, userName, dispatch } = useLens();
   const [openId, setOpenId] = useState<string | null>(null);
-  // Snapshot of the story being read: the click re-ranks the feed, so it may leave the list while open.
-  const [reading, setReading] = useState<Recommendation | null>(null);
-  const closeReader = useCallback(() => setReading(null), []);
   const [k, setK] = useState(TOP_K[1]);
   const ranked = result.ranked.slice(0, k);
 
@@ -27,8 +24,9 @@ export function FeedPage() {
         <h1>{greeting()}, {userName}.</h1>
         <div className="topk-row">
           <p>
-            Your top {k} out of {result.ranked.length.toLocaleString("en-US")} stories, ranked by a model trained on real
-            Microsoft News clicks.
+            {user.historyIds.length === 0
+              ? <>You haven't read anything yet, so these are the most-clicked stories in your sections. Open a few and the model starts learning what you like.</>
+              : <>Your top {k} out of {result.ranked.length.toLocaleString("en-US")} stories, ranked by a model trained on real Microsoft News clicks.</>}
           </p>
           <div className="topk" role="group" aria-label="How many recommendations">
             <span>Show top</span>
@@ -46,9 +44,8 @@ export function FeedPage() {
               <button className="btn primary" onClick={() => dispatch({ type: "reset-topics" })}>Reset topic controls</button>
             </EmptyState>
           ) : (
-            ranked.map((r) => <ArticleCard key={r.id} rec={r} open={openId === r.id} onToggle={() => setOpenId(openId === r.id ? null : r.id)} onRead={setReading} />)
+            ranked.map((r) => <ArticleCard key={r.id} rec={r} open={openId === r.id} onToggle={() => setOpenId(openId === r.id ? null : r.id)} />)
           )}
-          {reading && <ArticleReader rec={reading} onClose={closeReader} />}
         </div>
         <aside className="stack">
           <SectionsPanel />
