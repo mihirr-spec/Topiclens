@@ -384,6 +384,10 @@ td.num, th.num { text-align: right; }
 .ed-field input:focus-visible { outline: 2px solid var(--navy); outline-offset: 1px; }
 .ed-field small { font-weight: 400; color: var(--ink-3); font-size: 0.82rem; }
 .ed-hint { font-size: 0.82rem; color: var(--ink-3); margin: 8px 2px 0; }
+.ed-tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--rule); margin-bottom: 4px; }
+.ed-tabs button { background: transparent; border: 0; border-bottom: 2px solid transparent; padding: 8px 0; font-size: 0.92rem; color: var(--ink-3); }
+.ed-tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--navy); }
+.boot { min-height: 100dvh; }
 @media (max-width: 960px) { .ed-join-grid { grid-template-columns: 1fr; gap: 36px; } .ed-signin { position: static; } }
 
 /* FAQ */

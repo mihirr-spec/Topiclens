@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAuth, withInterests, type Account } from "./auth";
+import { cloudEnabled, useAuth, withInterests, type Account } from "./auth";
 import { Avatar, Wordmark } from "./components/brand";
 import { LensContext, type LensContextValue } from "./context";
 import { ARTICLE_BY_ID, DATA_NOTICE } from "./data/mind";
@@ -29,7 +29,7 @@ function pageFromHash(): PageKey {
 
 const PROVIDER_TEXT: Record<Account["provider"], string> = {
   google: "Google account",
-  email: "Local profile",
+  email: cloudEnabled ? "Email account" : "Local profile",
   guest: "Guest",
   demo: "Demo reader",
 };
@@ -38,7 +38,15 @@ export function App() {
   const auth = useAuth();
   const account = auth.account;
 
-  if (!account) return <LandingPage onSignIn={auth.signIn} />;
+  if (!auth.ready) return <div className="boot" aria-busy="true" />;
+  if (!account) {
+    return (
+      <LandingPage
+        onSignIn={auth.signIn}
+        cloud={cloudEnabled ? { signUpEmail: auth.signUpEmail, signInEmail: auth.signInEmail, signInGoogle: auth.signInGoogle, signInGuest: auth.signInGuest } : undefined}
+      />
+    );
+  }
   if (account.interests.length === 0) {
     return <OnboardingPage account={account} onDone={(interests) => auth.update(withInterests(account, interests))} onCancel={auth.signOut} />;
   }
@@ -56,10 +64,10 @@ function Shell({ account, onSignOut }: { account: Account; onSignOut: () => void
 
   const title = useCallback((id: string) => ARTICLE_BY_ID.get(id)?.title ?? id, []);
   const active = useMemo(
-    () => ({ id: account.id, seedHistoryIds: account.seedHistoryIds, interests: account.interests }),
-    [account.id, account.seedHistoryIds, account.interests],
+    () => ({ id: account.id, seedHistoryIds: account.seedHistoryIds, interests: account.interests, cloud: account.cloud }),
+    [account.id, account.seedHistoryIds, account.interests, account.cloud],
   );
-  const { user, dispatch } = useAppState(title, active);
+  const { user, dispatch, ready } = useAppState(title, active);
 
   const ctx = useMemo<LensContextValue>(() => ({
     user,
@@ -90,13 +98,14 @@ function Shell({ account, onSignOut }: { account: Account; onSignOut: () => void
       </header>
       <div className="notice-bar" role="note"><div>{DATA_NOTICE}</div></div>
       <main>
-        <LensContext.Provider value={ctx}>
+        {!ready && <p className="muted" aria-live="polite">Loading your saved feed…</p>}
+        {ready && <LensContext.Provider value={ctx}>
           {page === "feed" && <FeedPage />}
           {page === "topics" && <TopicExplorerPage />}
           {page === "compare" && <ComparePage />}
           {page === "results" && <ResultsPage />}
           {page === "about" && <AboutPage />}
-        </LensContext.Provider>
+        </LensContext.Provider>}
       </main>
     </div>
   );

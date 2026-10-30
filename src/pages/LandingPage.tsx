@@ -3,7 +3,15 @@ import {
   ArrowRight, BookOpen, ClipboardText, CursorClick, EnvelopeSimple, FileMagnifyingGlass, GearSix, GoogleLogo,
   GraduationCap, Graph, Lightbulb, ListChecks, Plus,
 } from "@phosphor-icons/react";
-import { demoAccount, emailAccount, GOOGLE_CLIENT_ID, googleAccount, guestAccount, loadGoogleIdentity, type Account } from "../auth";
+import { demoAccount, emailAccount, GOOGLE_CLIENT_ID, googleAccount, guestAccount, loadGoogleIdentity, type Account, type AuthResult } from "../auth";
+
+/** Supabase sign-in handlers (cloud mode). Absent in local mode. */
+export interface CloudAuth {
+  signUpEmail: (name: string, email: string, password: string) => Promise<AuthResult>;
+  signInEmail: (email: string, password: string) => Promise<AuthResult>;
+  signInGoogle: () => Promise<AuthResult>;
+  signInGuest: () => Promise<AuthResult>;
+}
 import { Eyebrow, Wordmark } from "../components/brand";
 import { APP_MODEL_RESULT, ARTICLE_BY_ID, BEST_RESULT, categoryName, META, PAPER, PERSONAS, POOL, RESULTS, SHOWCASE, TOPICS } from "../data/mind";
 import { positiveShares, signalName } from "../engine/explain";
@@ -33,7 +41,7 @@ function Reveal({ children, className = "", delay = 0 }: { children: ReactNode; 
   return <div ref={ref} className={`reveal ${className}`} style={{ ["--d" as string]: `${delay}ms` }}>{children}</div>;
 }
 
-export function LandingPage({ onSignIn }: { onSignIn: (a: Account) => void }) {
+export function LandingPage({ onSignIn, cloud }: { onSignIn: (a: Account) => void; cloud?: CloudAuth }) {
   return (
     <div className="ed">
       <header className="ed-nav">
@@ -57,7 +65,7 @@ export function LandingPage({ onSignIn }: { onSignIn: (a: Account) => void }) {
         <InsideAPick />
         <Results />
         <DataBand />
-        <Join onSignIn={onSignIn} />
+        <Join onSignIn={onSignIn} cloud={cloud} />
         <Faq />
       </main>
       <Footer />
@@ -294,7 +302,7 @@ function DataBand() {
   );
 }
 
-function Join({ onSignIn }: { onSignIn: (a: Account) => void }) {
+function Join({ onSignIn, cloud }: { onSignIn: (a: Account) => void; cloud?: CloudAuth }) {
   return (
     <section className="ed-section" id="join">
       <div className="ed-wrap ed-join-grid">
@@ -324,7 +332,7 @@ function Join({ onSignIn }: { onSignIn: (a: Account) => void }) {
             })}
           </ul>
         </div>
-        <Reveal delay={120}><SignInCard onSignIn={onSignIn} /></Reveal>
+        <Reveal delay={120}>{cloud ? <CloudSignInCard cloud={cloud} /> : <SignInCard onSignIn={onSignIn} />}</Reveal>
       </div>
     </section>
   );
@@ -380,6 +388,63 @@ function Footer() {
         </ul>
       </details>
     </footer>
+  );
+}
+
+/** Real accounts in Supabase: email + password, Google, or an anonymous guest. */
+function CloudSignInCard({ cloud }: { cloud: CloudAuth }) {
+  const [mode, setMode] = useState<"choose" | "signin" | "signup">("choose");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<AuthResult>({});
+
+  const run = async (fn: () => Promise<AuthResult>) => {
+    setBusy(true);
+    setMsg({});
+    const r = await fn();
+    setBusy(false);
+    setMsg(r);
+  };
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    void run(() => (mode === "signup" ? cloud.signUpEmail(name, email, password) : cloud.signInEmail(email, password)));
+  };
+
+  return (
+    <div className="ed-signin">
+      <h3>{mode === "signup" ? "Create your account" : "Sign in to your feed"}</h3>
+      <p>Your feed, clicks and preferences are saved to your account and follow you to any device.</p>
+      {mode === "choose" ? (
+        <div className="ed-signin-options">
+          <button className="cta line block" disabled={busy} onClick={() => void run(cloud.signInGoogle)}><GoogleLogo size={18} aria-hidden="true" /> Continue with Google</button>
+          <button className="cta line block" disabled={busy} onClick={() => setMode("signin")}><EnvelopeSimple size={18} aria-hidden="true" /> Continue with email</button>
+          <div className="ed-divider"><span>or</span></div>
+          <button className="cta quiet block" disabled={busy} onClick={() => void run(cloud.signInGuest)}>Continue as guest</button>
+        </div>
+      ) : (
+        <form className="ed-signin-options" onSubmit={submit}>
+          <div className="ed-tabs" role="tablist" aria-label="Account">
+            <button type="button" role="tab" aria-selected={mode === "signin"} onClick={() => { setMode("signin"); setMsg({}); }}>Sign in</button>
+            <button type="button" role="tab" aria-selected={mode === "signup"} onClick={() => { setMode("signup"); setMsg({}); }}>Create account</button>
+          </div>
+          {mode === "signup" && (
+            <label className="ed-field"><span>Name</span><input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" /></label>
+          )}
+          <label className="ed-field"><span>Email</span><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" /></label>
+          <label className="ed-field">
+            <span>Password</span>
+            <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === "signup" ? "new-password" : "current-password"} />
+            {mode === "signup" && <small>At least 6 characters.</small>}
+          </label>
+          <button className="cta navy block" type="submit" disabled={busy}>{busy ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}</button>
+          <button type="button" className="cta quiet block" onClick={() => { setMode("choose"); setMsg({}); }}>Other options</button>
+        </form>
+      )}
+      {msg.error && <p className="ed-hint" role="alert" style={{ color: "var(--danger)" }}>{msg.error}</p>}
+      {msg.notice && <p className="ed-hint" role="status" style={{ color: "var(--good)" }}>{msg.notice}</p>}
+    </div>
   );
 }
 

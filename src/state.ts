@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { categoryName, TOPICS } from "./data/mind";
 import { DEFAULT_PREFS, recommend, type Preferences } from "./engine/model";
+import { loadUserState, recordInteractions, resetUser, savePreferences, type InteractionKind } from "./lib/cloud";
 
 /**
  * App state: per-user reading history, preferences and activity log.
@@ -36,6 +37,8 @@ export interface ActiveUser {
   seedHistoryIds: string[];
   /** Sections picked at sign-up; a new or reset profile starts with them as its preferences. */
   interests: string[];
+  /** Stored in Supabase: load on sign-in, log every interaction, save preferences. */
+  cloud?: boolean;
 }
 
 export type Action =
@@ -141,9 +144,48 @@ export function diffRankings(before: string[], after: string[], title: (id: stri
   return out;
 }
 
+const INTERACTION_KIND: Partial<Record<Action["type"], InteractionKind>> = {
+  read: "read", like: "like", dislike: "dislike", dismiss: "dismiss",
+};
+
 export function useAppState(title: (id: string) => string, active: ActiveUser) {
   const [state, setState] = useState<AppState>(initialState);
-  const { id: uid } = active;
+  const { id: uid, cloud } = active;
+  const [ready, setReady] = useState(!cloud);
+
+  // Cloud accounts: rebuild history and preferences from Supabase when the user signs in.
+  useEffect(() => {
+    if (!cloud) {
+      setReady(true);
+      return;
+    }
+    let live = true;
+    setReady(false);
+    loadUserState(uid).then(
+      (saved) => {
+        if (!live) return;
+        if (saved) {
+          setState((s) => ({
+            ...s,
+            [uid]: {
+              historyIds: saved.historyIds.length ? saved.historyIds : [...active.seedHistoryIds],
+              prefs: { ...saved.prefs, sections: saved.prefs.sections?.length ? saved.prefs.sections : [...active.interests] },
+              log: s[uid]?.log ?? [],
+            },
+          }));
+        }
+        setReady(true);
+      },
+      (e: Error) => {
+        console.warn("TopicLens: could not load your saved feed", e.message);
+        if (live) setReady(true);
+      },
+    );
+    return () => {
+      live = false;
+    };
+    // Load once per signed-in user; seed and interests only fill gaps.
+  }, [uid, cloud]);
 
   useEffect(() => {
     try {
@@ -155,6 +197,18 @@ export function useAppState(title: (id: string) => string, active: ActiveUser) {
 
   const dispatch = useCallback(
     (a: Action) => {
+      if (cloud) {
+        if (a.type === "click") {
+          recordInteractions([
+            { kind: "click", article_id: a.id, rank: (a.passedOver?.length ?? 0) + 1 },
+            ...(a.passedOver ?? []).map((id, i) => ({ kind: "skip" as const, article_id: id, rank: i + 1 })),
+          ]);
+        } else if (a.type === "reset-user") {
+          void resetUser(uid).catch((e: Error) => console.warn("TopicLens: could not reset your profile", e.message));
+        } else if (INTERACTION_KIND[a.type] && "id" in a) {
+          recordInteractions([{ kind: INTERACTION_KIND[a.type]!, article_id: a.id }]);
+        }
+      }
       setState((s) => {
         const u = s[uid] ?? freshUser(active);
         const next = reduceUser(u, a, active);
@@ -177,9 +231,15 @@ export function useAppState(title: (id: string) => string, active: ActiveUser) {
         return { ...s, [uid]: { ...next, log } };
       });
     },
-    [title, uid, active],
+    [title, uid, active, cloud],
   );
 
   const user = useMemo(() => state[uid] ?? freshUser(active), [state, uid, active]);
-  return { user, dispatch };
+
+  // Cloud accounts: save preference changes (debounced in savePreferences).
+  useEffect(() => {
+    if (cloud && ready) savePreferences(uid, user.prefs);
+  }, [cloud, ready, uid, user.prefs]);
+
+  return { user, dispatch, ready };
 }
