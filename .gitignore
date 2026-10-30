@@ -2,6 +2,7 @@ node_modules
 dist
 *.local
 .env*
+!.env.production
 
 # Python environment and caches
 .venv
