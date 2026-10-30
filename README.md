@@ -13,6 +13,7 @@ pick then splits exactly into its reasons.
 
 | Doc | Contents |
 |---|---|
+| [docs/TopicLens_Report.pdf](docs/TopicLens_Report.pdf) | 3-page report: purpose, dataset, train/test split, models, metrics (regenerate with `ml/make_report.py`) |
 | [docs/EVALUATION_PLAN.md](docs/EVALUATION_PLAN.md) | All 14 models' results, how to read them, and the user-study plan |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | The ML pipeline and the browser app |
 | [docs/RESEARCH_MAPPING.md](docs/RESEARCH_MAPPING.md) | What comes from the paper and what is new |
