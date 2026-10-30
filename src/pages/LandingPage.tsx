@@ -100,8 +100,8 @@ function Hero() {
             <Sparks className="sk-hero-sparks" />
           </h1>
           <p className="sk-lede enter" style={{ ["--d" as string]: "160ms" }}>
-            TopicLens picks news stories for you, and every pick shows exactly why it was chosen, so you can push back and
-            reshape your feed.
+            TopicLens learns from what you read, click and tell it, and puts the news you're most likely to want first.
+            The reason for every pick is one tap away.
           </p>
           <div className="sk-ctas enter" style={{ ["--d" as string]: "240ms" }}>
             <a className="ink-btn" href="#join">Sign in <ArrowRight size={18} weight="bold" aria-hidden="true" /></a>
@@ -167,11 +167,11 @@ function WhoFor() {
 /* ── How it works: the five-step zigzag mock-up ───────────────────────────── */
 
 const STEPS = [
-  { icon: FileText, t: "Choose your interests", d: "Pick a few sections, or start as a real demo reader from the data." },
+  { icon: FileText, t: "Choose your interests", d: "Pick the sections you want, or start as a real demo reader. Change them any time." },
   { icon: Graph, t: "Learn topic signals", d: `${TOPICS.length} topics are learned from the text of ${fmt(META.news)} news articles.` },
-  { icon: GearSix, t: "Train a model", d: `A model trained on ${fmt(META.train_impressions)} real visits predicts what you'll click.` },
-  { icon: Lightbulb, t: "Explain each recommendation", d: "Every pick comes with its reasons, the past reads behind it and the words that matched." },
-  { icon: ChatCircleDots, t: "Feedback improves your feed", d: "Use More, Less or mute topics, and watch your feed change." },
+  { icon: GearSix, t: "Rank what you'll want", d: `A model trained on ${fmt(META.train_impressions)} real visits ranks every story by how likely you are to click it.` },
+  { icon: ChatCircleDots, t: "Learn from what you do", d: "Every story you open, pass over, like, hide or mute reshapes your next feed." },
+  { icon: Lightbulb, t: "See why, when you want", d: "Each pick carries its reasons: the signals, past reads and words behind it." },
 ];
 
 function HowItWorks() {
@@ -182,7 +182,7 @@ function HowItWorks() {
           <p className="label">A simple, transparent process</p>
           <h2 className="sk-h2 sk-how-title">How it works</h2>
           <Underline width={320} />
-          <p className="sk-lede">From your interests to a feed you can control. TopicLens uses a clean, interpretable pipeline to deliver recommendations with reasons.</p>
+          <p className="sk-lede">From your interests and clicks to a feed that keeps learning, with the reasons always available.</p>
           <a className="pen-btn" href="#inside">Learn more <ArrowRight size={18} weight="bold" aria-hidden="true" /></a>
         </Reveal>
         <ol className="sk-steps">
@@ -367,7 +367,7 @@ function Join({ onSignIn }: { onSignIn: (a: Account) => void }) {
 
 const FAQ = [
   { q: "Is this a real dataset?", a: `Yes. MIND is real, anonymised Microsoft News logs: ${fmt(META.train_impressions + META.dev_impressions)} visits from ${fmt(META.users)} readers, and what they clicked.` },
-  { q: "How does it decide what to show me?", a: "A supervised model trained on real clicks scores every story from ten signals (topic match, wording, your favourite sections, popularity, freshness and more). It's compared against KNN, SVMs, random forests, gradient boosting and a neural network." },
+  { q: "How does it decide what to show me?", a: "A model trained on real Microsoft News clicks scores every story from your reading and clicking history (topic match, wording, the sections you read), plus popularity and freshness. Your chosen sections, the stories you open or pass over, and your More / Less / Not interested feedback adjust it as you go. The trained model was picked after comparing it with KNN, SVMs, random forests, gradient boosting and a neural network." },
   { q: "How accurate is it?", a: `On ${fmt(META.dev_impressions)} visits it never saw, the app's model scores AUC ${APP_MODEL_RESULT?.auc.mean.toFixed(1)} (50 is a coin flip). The paper's larger neural model reports ${PAPER.auc.toFixed(1)}.` },
   { q: "Is my data sent anywhere?", a: "No. The model runs in your browser; your profile and history stay on this device." },
   { q: "Is this a real news app?", a: "No. It's a university research prototype built on a published paper, using 2019 news." },

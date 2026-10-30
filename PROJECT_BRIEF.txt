@@ -4,6 +4,19 @@ Last updated: 30 Oct 2026
 Copy deck (editable, section by section): https://claude.ai/artifact/MckSDdQBWKuY6x2DLRDu4H
 
 
+0. PRIMARY OBJECTIVE
+--------------------
+Recommend the most relevant news articles to each user, based on:
+  - their reading and clicking history (opening a story counts as a click),
+  - their preferred news topics / sections (chosen at sign-up, editable),
+  - their interaction with previously recommended articles (stories passed
+    over above a click are pushed down: "skip-above" implicit feedback),
+  - their explicit feedback (More / Less like this, Not interested, topic
+    sliders and mutes).
+The recommendation itself comes first; explanations support it (collapsed
+"Why am I seeing this?" panel, one-line reason per card).
+
+
 1. ONE-LINE SUMMARY
 -------------------
 TopicLens is an explainable news recommender: a trained machine-learning model

@@ -19,6 +19,20 @@ pick then splits exactly into its reasons.
 | [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) | An 8-minute walkthrough |
 | [PROJECT_BRIEF.txt](PROJECT_BRIEF.txt) | Design brief: pages, copy, visual direction |
 
+## What it recommends from
+
+The goal is to put the most relevant news first for each reader, using:
+
+| Signal | How it is used |
+|---|---|
+| Reading and clicking history | The trained model's profile: topic match, wording and section shares of the last 50 reads. Opening a story counts as a click and joins the history. |
+| Preferred sections | Chosen at sign-up and editable in "Your sections"; stories from them get an explicit +2.0 log-odds boost. |
+| Interaction with earlier recommendations | "Skip-above" implicit feedback: unopened stories ranked above an opened one lose 0.5 log-odds per pass (max 3). |
+| Explicit feedback | More / Less like this shift the profile; Not interested and Less like this hide stories; topic sliders and mutes. |
+
+Explanations support the ranking rather than lead it: each card shows a one-line reason, and the full breakdown is
+in a collapsed "Why am I seeing this?" panel.
+
 ## How it works
 
 1. **Data:** MIND-small. 65,238 articles, 156,965 training visits (9-14 Nov 2019), 73,152 test visits (15 Nov).
