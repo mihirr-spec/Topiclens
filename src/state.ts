@@ -40,8 +40,8 @@ export interface ActiveUser {
 
 export type Action =
   | { type: "read"; id: string }
-  /** The reader opened a recommended story: a click, logged like a MIND click. */
-  | { type: "click"; id: string }
+  /** The reader opened a recommended story: a click, logged like a MIND click. `passedOver` are the unopened stories ranked above it. */
+  | { type: "click"; id: string; passedOver?: string[] }
   | { type: "like"; id: string }
   | { type: "dislike"; id: string }
   | { type: "dismiss"; id: string }
@@ -77,8 +77,12 @@ const uniq = (xs: string[]) => [...new Set(xs)];
 function reduceUser(u: UserState, a: Action, active: ActiveUser): UserState {
   const p = u.prefs;
   switch (a.type) {
+    case "click": {
+      const skipped = { ...(p.skipped ?? {}) };
+      for (const id of a.passedOver ?? []) skipped[id] = (skipped[id] ?? 0) + 1;
+      return { ...u, historyIds: uniq([...u.historyIds, a.id]), prefs: { ...p, skipped } };
+    }
     case "read":
-    case "click":
       return { ...u, historyIds: uniq([...u.historyIds, a.id]) };
     case "like":
       return { ...u, prefs: { ...p, liked: uniq([...p.liked, a.id]), disliked: p.disliked.filter((x) => x !== a.id) } };
@@ -105,7 +109,10 @@ function reduceUser(u: UserState, a: Action, active: ActiveUser): UserState {
 export function describeAction(a: Action, title: (id: string) => string, u: UserState): string {
   switch (a.type) {
     case "read": return `Read “${title(a.id)}” (added to history)`;
-    case "click": return `Opened “${title(a.id)}” (click added to history)`;
+    case "click": {
+      const n = a.passedOver?.length ?? 0;
+      return `Opened “${title(a.id)}” (click added to history${n ? `; passed over ${n} ${n === 1 ? "story" : "stories"} above it` : ""})`;
+    }
     case "like": return `More like this: “${title(a.id)}”`;
     case "dislike": return `Less like this: “${title(a.id)}”`;
     case "dismiss": return `Not interested: “${title(a.id)}”`;

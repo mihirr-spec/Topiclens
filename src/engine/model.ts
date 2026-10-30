@@ -24,11 +24,13 @@ export interface Preferences {
   liked: string[];
   disliked: string[];
   dismissed: string[];
-  /** Sections the reader says they prefer (MIND categories); blended into the section-affinity signal. */
+  /** Sections the reader says they prefer (MIND categories); each gets an explicit boost. */
   sections?: string[];
+  /** Article id -> times it was shown above a story the reader opened, and passed over. */
+  skipped?: Record<string, number>;
 }
 
-export const DEFAULT_PREFS: Preferences = { multipliers: {}, muted: [], liked: [], disliked: [], dismissed: [], sections: [] };
+export const DEFAULT_PREFS: Preferences = { multipliers: {}, muted: [], liked: [], disliked: [], dismissed: [], sections: [], skipped: {} };
 
 export const PARAMS = {
   /** How strongly More / Less like this shift the profile. */
@@ -43,6 +45,13 @@ export const PARAMS = {
    * strongly sports-reading demo reader's top 10 while their history still leads.
    */
   sectionBoost: 2.0,
+  /**
+   * Implicit feedback from earlier recommendations ("skip-above", Joachims 2002): opening the
+   * story at rank r means the unopened stories ranked above it were seen and passed over.
+   * Each pass costs this many log-odds, up to maxSkips.
+   */
+  skipPenalty: 0.5,
+  maxSkips: 3,
 };
 
 export function effectiveMultiplier(prefs: Preferences, topic: number): number {
@@ -65,6 +74,8 @@ export interface Profile {
   historyLength: number;
   /** Sections the reader chose (stated preference). */
   sections: ReadonlySet<string>;
+  /** Times each story was passed over in earlier feeds. */
+  skipped: Readonly<Record<string, number>>;
 }
 
 const mean = (vs: Float32Array[], dim: number) => {
@@ -104,6 +115,7 @@ export function buildProfile(historyIds: string[], prefs: Preferences): Profile 
     subcategoryShare: shares(pool.map((a) => a.subcategory)),
     historyLength: historyIds.length,
     sections: new Set(prefs.sections ?? []),
+    skipped: prefs.skipped ?? {},
   };
 }
 
@@ -186,6 +198,10 @@ export function score(profile: Profile, a: Article): { logit: number; contributi
   // TopicLens extension on top of the trained model: an explicit boost for chosen sections.
   if (profile.sections.has(a.category)) {
     contributions.push({ feature: "section_pref", label: "A section you chose", value: 1, contribution: PARAMS.sectionBoost });
+  }
+  const skips = Math.min(profile.skipped[a.id] ?? 0, PARAMS.maxSkips);
+  if (skips > 0) {
+    contributions.push({ feature: "skipped", label: "You passed over this before", value: skips, contribution: -PARAMS.skipPenalty * skips });
   }
   const logit = MODEL.intercept + contributions.reduce((s, c) => s + c.contribution, 0);
   contributions.sort((p, q) => Math.abs(q.contribution) - Math.abs(p.contribution));

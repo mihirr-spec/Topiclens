@@ -5,11 +5,11 @@ import { effectiveMultiplier, type Recommendation } from "../engine/model";
 import { Evidence, HighlightedText, pct, TopicChip } from "./shared";
 
 export function ArticleCard({ rec, open, onToggle }: { rec: Recommendation; open: boolean; onToggle: () => void }) {
-  const { dispatch, user } = useLens();
+  const { dispatch, user, result } = useLens();
   const a = ARTICLE_BY_ID.get(rec.id)!;
   const liked = user.prefs.liked.includes(rec.id);
   // Opening a story is a click: it joins the reading history and the feed re-ranks, as in MIND's logs.
-  const onOpen = () => dispatch({ type: "click", id: rec.id });
+  const onOpen = () => dispatch({ type: "click", id: rec.id, passedOver: result.ranked.slice(0, rec.rank - 1).map((r) => r.id) });
 
   return (
     <article className={`feed-card ${a.image ? "has-image" : ""}`} aria-labelledby={`t-${rec.id}`}>

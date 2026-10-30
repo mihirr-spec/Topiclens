@@ -108,6 +108,17 @@ describe("trained-model ranker", () => {
     expect(MODEL.intercept + rec.contributions.reduce((acc, c) => acc + c.contribution, 0)).toBeCloseTo(rec.logit, 10);
   });
 
+  it("stories passed over above a click drop, with the skip as an exact reason", () => {
+    const passed = res.ranked[0].id;
+    const after = recommend(leo.historyIds, { ...DEFAULT_PREFS, skipped: { [passed]: 2 } });
+    const rec = after.ranked.find((r) => r.id === passed)!;
+    expect(rec.rank).toBeGreaterThan(1);
+    expect(rec.contributions.find((c) => c.feature === "skipped")?.contribution).toBeCloseTo(-2 * PARAMS.skipPenalty, 12);
+    expect(MODEL.intercept + rec.contributions.reduce((acc, c) => acc + c.contribution, 0)).toBeCloseTo(rec.logit, 10);
+    const capped = recommend(leo.historyIds, { ...DEFAULT_PREFS, skipped: { [passed]: 99 } }).ranked.find((r) => r.id === passed)!;
+    expect(capped.contributions.find((c) => c.feature === "skipped")?.contribution).toBeCloseTo(-PARAMS.maxSkips * PARAMS.skipPenalty, 12);
+  });
+
   it("overlap@k counts shared items in the top k", () => {
     expect(overlapAtK(["a", "b", "c"], ["c", "x", "a"], 3)).toBeCloseTo(2 / 3);
   });

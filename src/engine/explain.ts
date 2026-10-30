@@ -20,6 +20,7 @@ export const SIGNAL_NAME: Record<string, string> = {
   hours_since_first_seen: "How long it has been out",
   impression_size: "Feed size",
   section_pref: "A section you chose",
+  skipped: "You passed over this before",
 };
 
 export const signalName = (c: Pick<Contribution, "feature">) => SIGNAL_NAME[c.feature] ?? c.feature;
