@@ -135,19 +135,32 @@ const STEPS = [
 function HowItWorks() {
   return (
     <section className="ed-section" id="how">
-      <div className="ed-wrap">
-        <Reveal>
-          <Eyebrow>How it works</Eyebrow>
-          <h2 className="ed-h2">From your interests to a feed that keeps <em>learning</em>.</h2>
+      <div className="ed-wrap ed-how-grid">
+        <Reveal className="ed-how-copy">
+          <Eyebrow>A simple, transparent process</Eyebrow>
+          <h2 className="ed-h2 ed-how-title">How it <em>works</em></h2>
+          <span className="ed-how-rule" aria-hidden="true" />
+          <p className="ed-lede">
+            From your interests to a feed you can control. TopicLens uses a clean, interpretable pipeline to put the
+            right stories first, with the reasons on file.
+          </p>
+          <a className="cta line" href="#inside">Learn more <ArrowRight size={18} aria-hidden="true" /></a>
         </Reveal>
-        <ol className="ed-steps">
+        {/* Steps zigzag: 1, 3, 5 in the left column, 2 and 4 half a card lower on the right. */}
+        <ol className="ed-zig">
+          <svg className="ed-zig-path" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M48 9 C 54 9, 54 13, 56 15 M44 33 C 50 31, 51 28, 56 27 M48 48 C 54 47, 54 43, 56 42 M44 70 C 50 68, 51 62, 56 59" />
+          </svg>
           {STEPS.map(({ icon: Icon, t, d }, i) => (
-            <li key={t}>
-              <Reveal delay={i * 80}>
-                <div className="ed-num">{String(i + 1).padStart(2, "0")}</div>
-                <Icon size={36} weight="light" aria-hidden="true" />
-                <h3>{t}</h3>
-                <p>{d}</p>
+            <li key={t} className={`ed-zig-step zig-${i}`}>
+              <Reveal delay={i * 90} className="ed-zig-card">
+                <span className="ed-zig-num">{i + 1}</span>
+                <span className="ed-zig-icon"><Icon size={30} weight="light" aria-hidden="true" /></span>
+                <div>
+                  <h3>{t}</h3>
+                  <span className="ed-zig-rule" aria-hidden="true" />
+                  <p>{d}</p>
+                </div>
               </Reveal>
             </li>
           ))}

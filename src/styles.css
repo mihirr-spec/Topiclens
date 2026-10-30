@@ -287,16 +287,31 @@ td.num, th.num { text-align: right; }
 /* Who it's for: headline and intro, then the 2 x 2 numbered grid underneath */
 .ed-who-grid .ed-numbered { max-width: 1040px; }
 
-/* How it works: five steps */
-.ed-steps { list-style: none; margin: 44px 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--rule); }
-.ed-steps li { padding: 24px 22px 0 0; }
-.ed-steps li + li { padding-left: 22px; border-left: 1px solid var(--rule); }
-.ed-steps .ed-num { margin-bottom: 18px; }
-.ed-steps .ed-num::after { width: 40px; }
-.ed-steps svg { color: var(--ink); margin-bottom: 14px; }
-.ed-steps h3 { font-size: 1.3rem; margin: 0 0 8px; }
-.ed-steps p { font-family: var(--serif); font-size: 1.04rem; color: var(--ink-2); margin: 0; }
-@media (max-width: 1000px) { .ed-steps { grid-template-columns: 1fr; } .ed-steps li, .ed-steps li + li { padding: 22px 0; border-left: 0; border-bottom: 1px solid var(--rule); } }
+/* How it works: copy left; five step cards zigzagging in two columns on the right */
+.ed-how-grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.25fr); gap: 72px; align-items: center; }
+.ed-how-title { font-size: clamp(3rem, 5.6vw, 4.8rem); line-height: 1; margin-bottom: 22px; }
+.ed-how-rule { display: block; width: 120px; height: 2px; background: var(--navy); margin-bottom: 26px; }
+.ed-zig { position: relative; isolation: isolate; list-style: none; margin: 0; padding: 24px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(84px, auto); column-gap: 40px; row-gap: 22px; }
+.ed-zig-step { min-width: 0; }
+.zig-0 { grid-column: 1; grid-row: 1 / span 2; }
+.zig-1 { grid-column: 2; grid-row: 2 / span 2; }
+.zig-2 { grid-column: 1; grid-row: 3 / span 2; }
+.zig-3 { grid-column: 2; grid-row: 4 / span 2; }
+.zig-4 { grid-column: 1; grid-row: 5 / span 2; }
+.ed-zig-card { position: relative; height: 100%; display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 18px; align-items: start; padding: 26px 24px 24px; background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: 0 1px 0 rgba(20, 20, 20, 0.03), 0 14px 28px -22px rgba(20, 20, 20, 0.35); }
+.ed-zig-num { position: absolute; top: -16px; left: -16px; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: #fff; font-family: var(--mono); font-size: 0.95rem; font-weight: 500; box-shadow: 0 0 0 4px var(--paper); }
+.ed-zig-icon { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--paper-2); color: var(--ink); }
+.ed-zig-card h3 { font-size: 1.35rem; line-height: 1.15; margin: 4px 0 8px; }
+.ed-zig-rule { display: block; width: 36px; height: 2px; background: var(--navy); margin-bottom: 10px; }
+.ed-zig-card p { font-family: var(--serif); font-size: 1.04rem; line-height: 1.45; color: var(--ink-2); margin: 0; }
+.ed-zig-path { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; overflow: visible; }
+.ed-zig-path path { fill: none; stroke: var(--ink-2); stroke-width: 1.6; stroke-dasharray: 2 5; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+@media (max-width: 1000px) {
+  .ed-how-grid { grid-template-columns: 1fr; gap: 40px; }
+  .ed-zig { grid-template-columns: 1fr; padding-left: 16px; }
+  .ed-zig-step { grid-column: 1 !important; grid-row: auto !important; }
+  .ed-zig-path { display: none; }
+}
 
 /* Most clicked: a newspaper front page of real stories */
 .ed-front { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr)); margin-top: 40px; border-top: 2px solid var(--ink); }
