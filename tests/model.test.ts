@@ -10,8 +10,6 @@ import { ComparePage } from "../src/pages/ComparePage";
 import { FeedPage } from "../src/pages/FeedPage";
 import { LandingPage } from "../src/pages/LandingPage";
 import { OnboardingPage } from "../src/pages/OnboardingPage";
-import { ResultsPage } from "../src/pages/ResultsPage";
-import { TopicExplorerPage } from "../src/pages/TopicExplorerPage";
 import { diffRankings, type UserState } from "../src/state";
 
 const leo = PERSONAS[0];
@@ -154,7 +152,7 @@ describe("pages render", () => {
   const render = (Page: () => JSX.Element, value: LensContextValue) =>
     renderToString(createElement(LensContext.Provider, { value }, createElement(Page)));
 
-  for (const [name, Page] of Object.entries({ FeedPage, TopicExplorerPage, ComparePage, ResultsPage, AboutPage })) {
+  for (const [name, Page] of Object.entries({ FeedPage, ComparePage, AboutPage })) {
     it(`${name} renders with defaults and with controls applied`, () => {
       expect(render(Page, ctx(DEFAULT_PREFS)).length).toBeGreaterThan(500);
       expect(render(Page, ctx({ ...DEFAULT_PREFS, muted: [0], multipliers: { 1: 2 } })).length).toBeGreaterThan(500);

@@ -9,15 +9,11 @@ import { ComparePage } from "./pages/ComparePage";
 import { FeedPage } from "./pages/FeedPage";
 import { LandingPage } from "./pages/LandingPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
-import { ResultsPage } from "./pages/ResultsPage";
-import { TopicExplorerPage } from "./pages/TopicExplorerPage";
 import { useAppState } from "./state";
 
 const PAGES = [
   { key: "feed", label: "For you" },
-  { key: "topics", label: "Topics" },
   { key: "compare", label: "Compare" },
-  { key: "results", label: "Results" },
   { key: "about", label: "About" },
 ] as const;
 type PageKey = (typeof PAGES)[number]["key"];
@@ -101,9 +97,7 @@ function Shell({ account, onSignOut }: { account: Account; onSignOut: () => void
         {!ready && <p className="muted" aria-live="polite">Loading your saved feed…</p>}
         {ready && <LensContext.Provider value={ctx}>
           {page === "feed" && <FeedPage />}
-          {page === "topics" && <TopicExplorerPage />}
           {page === "compare" && <ComparePage />}
-          {page === "results" && <ResultsPage />}
           {page === "about" && <AboutPage />}
         </LensContext.Provider>}
       </main>

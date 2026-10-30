@@ -13,7 +13,7 @@ export interface CloudAuth {
   signInGuest: () => Promise<AuthResult>;
 }
 import { Eyebrow, Wordmark } from "../components/brand";
-import { APP_MODEL_RESULT, ARTICLE_BY_ID, BEST_RESULT, categoryName, META, PAPER, PERSONAS, POOL, RESULTS, SHOWCASE, TOPICS } from "../data/mind";
+import { APP_MODEL_RESULT, ARTICLE_BY_ID, BEST_RESULT, categoryName, META, PAPER, PERSONAS, POOL, SHOWCASE, TOPICS } from "../data/mind";
 import { positiveShares, signalName } from "../engine/explain";
 import { DEFAULT_PREFS, recommend } from "../engine/model";
 
@@ -50,10 +50,9 @@ export function LandingPage({ onSignIn, cloud }: { onSignIn: (a: Account) => voi
           <nav aria-label="Landing">
             <a href="#top">Home</a>
             <a href="#how">How it works</a>
-            <a href="#results">For Researchers</a>
             <a href="#who">About</a>
           </nav>
-          <a className="cta navy sm" href="#join">Try TopicLens <ArrowRight size={16} aria-hidden="true" /></a>
+          <a className="cta navy sm" href="#join">Sign in <ArrowRight size={16} aria-hidden="true" /></a>
         </div>
       </header>
 
@@ -63,7 +62,6 @@ export function LandingPage({ onSignIn, cloud }: { onSignIn: (a: Account) => voi
         <HowItWorks />
         <FrontPage />
         <InsideAPick />
-        <Results />
         <DataBand />
         <Join onSignIn={onSignIn} cloud={cloud} />
         <Faq />
@@ -191,7 +189,7 @@ function FrontPage() {
         </Reveal>
         <div className="ed-front">
           {lead && (
-            <a className="ed-story lead" href={lead.url} target="_blank" rel="noreferrer">
+            <a className="ed-story lead" href="#join">
               <img src={lead.image!.src} alt="" referrerPolicy="no-referrer" />
               <span className="kicker">No. 1 · {categoryName(lead.category)}</span>
               <h3>{lead.title}</h3>
@@ -199,7 +197,7 @@ function FrontPage() {
             </a>
           )}
           {rest.map((a, i) => (
-            <a key={a.id} className="ed-story" href={a.url} target="_blank" rel="noreferrer">
+            <a key={a.id} className="ed-story" href="#join">
               <span className="kicker">No. {i + 2} · {categoryName(a.category)}</span>
               <h3>{a.title}</h3>
             </a>
@@ -241,38 +239,6 @@ function InsideAPick() {
             ))}
             {hist && hist.pull > 0 && <p className="ed-pick-foot">Closest past read: <b>{ARTICLE_BY_ID.get(hist.id)?.title}</b></p>}
           </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-function Results() {
-  const rows = [...RESULTS].sort((a, b) => b.auc.mean - a.auc.mean);
-  const lo = 48, hi = Math.max(PAPER.auc, BEST_RESULT.auc.mean) + 1;
-  const w = (v: number) => `${((v - lo) / (hi - lo)) * 100}%`;
-  return (
-    <section className="ed-section" id="results">
-      <div className="ed-wrap ed-results-grid">
-        <Reveal>
-          <Eyebrow>For researchers</Eyebrow>
-          <h2 className="ed-h2">Measured on {fmt(META.dev_impressions)} visits it <em>never saw</em>.</h2>
-          <div className="ed-figures">
-            <div><b>{BEST_RESULT.auc.mean.toFixed(1)}</b><span>AUC, best model ({BEST_RESULT.model})</span></div>
-            <div><b>50</b><span>AUC of a coin flip</span></div>
-            <div><b>{PAPER.auc.toFixed(1)}</b><span>The paper's neural model, from its paper</span></div>
-          </div>
-          <p className="ed-note">AUC: how often a clicked story ranks above an unclicked one. Every model was trained on {fmt(META.train_impressions)} real visits.</p>
-        </Reveal>
-        <Reveal delay={120} className="ed-chart">
-          {rows.map((r) => (
-            <div key={r.model} className={`ed-chart-row ${r.model === APP_MODEL_RESULT?.model ? "is-app" : ""}`}>
-              <span>{r.model}</span>
-              <span className="ed-chart-bar" style={{ width: w(r.auc.mean) }} />
-              <b>{r.auc.mean.toFixed(1)}</b>
-            </div>
-          ))}
-          <p className="ed-note">In navy: the model the app ranks with, because every pick splits exactly into its reasons.</p>
         </Reveal>
       </div>
     </section>
@@ -342,7 +308,7 @@ const FAQ = [
   { q: "Is this a real dataset?", a: `Yes. MIND is real, anonymised Microsoft News logs: ${fmt(META.train_impressions + META.dev_impressions)} visits from ${fmt(META.users)} readers, and what they clicked.` },
   { q: "How does it decide what to show me?", a: "A model trained on real Microsoft News clicks scores every story from your reading and clicking history (topic match, wording, the sections you read), plus popularity and freshness. Your chosen sections, the stories you open or pass over, and your More / Less / Not interested feedback adjust it as you go. The trained model was picked after comparing it with KNN, SVMs, random forests, gradient boosting and a neural network." },
   { q: "How accurate is it?", a: `On ${fmt(META.dev_impressions)} visits it never saw, the app's model scores AUC ${APP_MODEL_RESULT?.auc.mean.toFixed(1)} and the best model ${BEST_RESULT.auc.mean.toFixed(1)} (50 is a coin flip). The paper's neural model reports ${PAPER.auc.toFixed(1)}.` },
-  { q: "Is my data sent anywhere?", a: "No. The model runs in your browser; your profile and history stay on this device." },
+  { q: "What happens to my data?", a: "The model runs in your browser. Your account, chosen sections, clicks and feedback are saved to the project's database so your feed follows you, and only you can read them." },
   { q: "Is this a real news app?", a: "No. It's a university research prototype built on a published paper, using 2019 news." },
 ];
 
@@ -393,7 +359,7 @@ function Footer() {
 
 /** Real accounts in Supabase: email + password, Google, or an anonymous guest. */
 function CloudSignInCard({ cloud }: { cloud: CloudAuth }) {
-  const [mode, setMode] = useState<"choose" | "signin" | "signup">("choose");
+  const [mode, setMode] = useState<"choose" | "signin" | "signup">("signup");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -430,7 +396,7 @@ function CloudSignInCard({ cloud }: { cloud: CloudAuth }) {
             <button type="button" role="tab" aria-selected={mode === "signup"} onClick={() => { setMode("signup"); setMsg({}); }}>Create account</button>
           </div>
           {mode === "signup" && (
-            <label className="ed-field"><span>Name</span><input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" /></label>
+            <label className="ed-field"><span>Name</span><input required value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" /></label>
           )}
           <label className="ed-field"><span>Email</span><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" /></label>
           <label className="ed-field">
@@ -439,7 +405,7 @@ function CloudSignInCard({ cloud }: { cloud: CloudAuth }) {
             {mode === "signup" && <small>At least 6 characters.</small>}
           </label>
           <button className="cta navy block" type="submit" disabled={busy}>{busy ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}</button>
-          <button type="button" className="cta quiet block" onClick={() => { setMode("choose"); setMsg({}); }}>Other options</button>
+          <button type="button" className="cta quiet block" onClick={() => { setMode("choose"); setMsg({}); }}>Google or guest instead</button>
         </form>
       )}
       {msg.error && <p className="ed-hint" role="alert" style={{ color: "var(--danger)" }}>{msg.error}</p>}
