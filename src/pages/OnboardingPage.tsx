@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Account } from "../auth";
 import { Avatar, Wordmark } from "../components/brand";
 import { CATEGORIES, categoryName, POOL } from "../data/mind";
@@ -11,6 +11,8 @@ export function OnboardingPage({ account, onDone, onCancel }: {
   account: Account; onDone: (interests: string[]) => void; onCancel: () => void;
 }) {
   const [picked, setPicked] = useState<string[]>([]);
+  // Arriving from the landing page's sign-in card, start at the top of the picker.
+  useEffect(() => window.scrollTo(0, 0), []);
   const toggle = (c: string) =>
     setPicked((p) => (p.includes(c) ? p.filter((x) => x !== c) : p.length < MAX ? [...p, c] : p));
 
