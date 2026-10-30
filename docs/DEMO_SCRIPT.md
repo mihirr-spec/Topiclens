@@ -1,73 +1,56 @@
-# Demo script (≈ 8 minutes)
+# Demo script (about 8 minutes)
 
-**Setup:**
-- Run `npm run dev` and open http://localhost:5173.
-- If you've used the app before, select **Asha** and click **Reset this user** in the sidebar.
-- The rankings quoted below come from the deterministic model and are checked by `tests/engine.test.ts`.
+**Setup.** `npm run dev`, open http://localhost:5173. If you have used the app before, sign out first.
 
-## 0. Framing (30 s) · *About the Research*
+## 0. Landing page (45 s)
 
-Open **About the Research**.
-- "This prototype builds on Liu et al. 2024, *Topic-Centric Explanations for News Recommendation*."
-- "The paper explains a neural recommender through topics. We reuse its explanation structure in a small, transparent model, and add something new: users can *act* on the explanation."
-- Point at the **Paper vs baseline vs TopicLens** table and the orange boxes in the architecture diagram.
+- "TopicLens is a news feed that shows its working. It's built on Liu et al. 2024 and trained on MIND, real
+  Microsoft News click logs."
+- Scroll through **Who it's for** and **How it works**, then **See inside a pick**: a real reader's #1 story with
+  its reasons, computed live.
+- Stop at the results chart: "14 models, all tested on 73,152 visits they never saw. The hybrid reaches AUC 66.6;
+  the paper's neural model reports 68.1."
 
-## 1. The user and their history (45 s) · *News Feed*
+## 1. Sign in as a real reader (30 s)
 
-- Select **Asha (demo user)** and point at **Reading history**. She read 6 tech/AI articles: an open-source language model, AI coding assistants, AI chips, AI regulation, on-device AI phones, and AI phishing.
-- Point out the γ percentages: newer reads weigh more.
-- Point at **Your topic profile**: *AI & Language Models* dominates. "This was computed from her history, not typed in."
+- In **Start with your interests**, click **Continue as Leo**. Leo is an anonymised MIND user who reads mostly sports.
+- The greeting shows his taste: College football, NFL trades & teams, College towns & states.
 
-## 2. The recommendation (45 s)
+## 2. The feed (1 min)
 
-- The top 3 are all **AI application** articles:
-  1. *Language model helps aid workers translate rare languages*
-  2. *Classroom AI tutors…*
-  3. *Hospital pilots AI tool that helps radiologists triage scans*
-- Each card shows topic chips and a one-line reason.
-- Note the yellow banner: sample data, prototype scorer.
+- #1 is *College football Week 12 primer: Heisman Watch, upset picks, predictions and more*, at a 92% match.
+- Each card shows the section, a match percentage (the model's click probability), topic chips and a one-line reason.
+- Point at **How your feed is ranked** in the sidebar: a logistic regression trained on 156,965 visits, AUC 63.8.
 
 ## 3. "Why am I seeing this?" (1.5 min)
 
-Click **Why am I seeing this?** on the radiology article (#3).
-- **Summary**, tagged *Template text*: fixed sentences filled with computed numbers.
-- **Score by topic**, tagged *Computed by model*: AI & Language Models contributes almost all of the score; Health & Medicine adds a little. Read the caption: "the bars add up to the score".
-- **Evidence from your reading history**: the on-device AI phone article and the AI regulation article contribute most.
-- **Topic words**: words coloured by topic, e.g. *AI*, *model*, *machine learning* vs *hospital*, *patients*, *doctors*.
-- **What this explanation does not know**: an association is not a cause; the model doesn't know why she read things.
+Open it on the #1 story.
+- **What drove the score:** one bar per signal (a sub-section Leo reads a lot, similar wording to his reads, a high
+  click rate earlier...). Read the caption: the parts add up exactly to the score.
+- **Your reads behind it:** the past reads that pushed it up most.
+- **Topics and words that matched:** topic words highlighted in the story.
+- **What this doesn't know:** association is not cause; the model learned from November 2019 readers.
 
-## 4. Change a topic (1 min)
+## 4. Push back (1.5 min)
 
-In the same panel, click **Mute topic** next to *Health & Medicine*. Alternatively, open **Topic Explorer** and use **Mute** there.
+- On a story, click **Less like this**: it disappears and is listed under **Hidden** with its reason.
+- In the Why panel, click **Mute** on a topic: every story mostly about it leaves the feed.
+- Show the **Activity log**: each action and its computed effect on the top 10.
+- Open **Topics**, drag a slider to ×2 and watch the taste bars change.
 
-- The radiology article and *Clinics test AI assistant…* disappear from the feed. They are listed under **Hidden** with the reason ("…% about muted topic Health & Medicine").
-- The **Activity log** shows the computed change, e.g. "↓ … left the top 10", "↑ … entered the top 10".
-- Optional: in the **Topic Explorer**, drag the *AI & Language Models* slider to ×0.25. Security and climate articles move up, and the dashed outline shows the inferred interest next to the adjusted share.
+## 5. Compare (1 min)
 
-## 5. Feedback buttons (45 s)
+- **Compare** puts the trained model next to a simple rule (Most popular, or Topic match only) for the same reader.
+- "On held-out clicks the trained model scores 63.8 AUC; topic match alone scores 51.8, barely above chance."
 
-- On *AI model forecasts crop yields…* (AI + Climate & Energy), click **More like this**.
-  - Climate/energy articles jump 20–30 places: e.g. *Offshore wind farm…* goes #42 → #12 and *Drought shrinks reservoirs…* #39 → #19. They are still just outside the top 10, so the log may only report moves within it.
-  - Show the change in the **Topic Explorer** instead: Climate & Energy's share bar grows.
-- Click **Not interested** on any article. Only that article is hidden.
+## 6. Results (1 min)
 
-## 6. Compare systems (1 min) · *Compare Systems*
+- The AUC chart with confidence intervals, the full metrics table, what the tree model relies on (earlier-day click
+  rate, category, sub-section affinity), and the app model's weights.
+- The paper's own Table 5, labelled "from the paper".
 
-- Left: the **TF-IDF baseline**. Same history, no explanation, ignores controls. With defaults its top 6 are T10, T17, T11, T12, T07, T08.
-- Right: **TopicLens with your controls**. Each item has chips, a reason, and ▲/▼ versus its baseline rank.
-- Toggle **TopicLens defaults** to separate the effect of the model from the effect of the user's controls.
-- Stress the honesty point: "overlap@10 says the lists *differ*, not which is *better*."
+## 7. Close (30 s)
 
-## 7. Evaluation (1 min) · *Evaluation*
-
-- **Section 1 (measured):**
-  - mean NPMI on the sample corpus;
-  - explanation coverage 30/30;
-  - faithfulness residual 0 (at most floating-point rounding), meaning the explanations sum exactly to the score.
-- **Section 2:** recommendation accuracy is **Not yet evaluated**. The sample data has no clicks; `npm run eval:mind` exists for MIND.
-- **Section 3:** the paper's own Table 5, clearly attributed and not reproduced.
-- **Section 5:** user-study hypotheses H1–H4, all *Not yet evaluated*.
-
-## 8. Close (30 s)
-
-"What's from the paper: topic-centric explanations, the u = Σγβ structure, NPMI, the MIND metrics. What's new: explanations that exactly decompose the score, user control over topics, a feedback loop with a visible change log, and a side-by-side baseline comparison. What we haven't shown: that any of this improves accuracy or trust. That needs MIND training and a user study."
+"From the paper: the dataset, the metrics, the training objective and the idea of topic-centric explanations. New
+here: a model trained on real clicks whose explanations are exact, a comparison of 14 models, and controls that let
+readers act on the explanation. Still to do: a user study to test whether this actually helps people."

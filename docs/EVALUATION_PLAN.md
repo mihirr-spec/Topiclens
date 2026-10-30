@@ -1,60 +1,61 @@
-# Evaluation plan
+# Evaluation
 
-Status legend: **Measured** (computed by this prototype), **Implemented, not run**, **Not yet evaluated**.
+Status legend: **Measured** (computed on MIND by this project), **From the paper**, **Not yet evaluated**.
 
-## A. Recommendation accuracy
+## A. Recommendation accuracy (Measured)
 
-| Metric | Definition | Status |
-|---|---|---|
-| AUC | Per-impression ROC AUC, averaged (MIND) | Implemented & unit-tested; **not yet evaluated** on data |
-| MRR | Σ(label/rank)/Σlabel per impression | same |
-| nDCG@5, nDCG@10 | gain 2^rel−1, log₂(rank+1) discount | same |
+Protocol: train on MIND-small train (156,965 visits, 9-14 Nov 2019; last day held out for early stopping), test on
+MIND-small dev (73,152 visits, 15 Nov). Metrics are per impression, then averaged; 95% confidence intervals come from
+500 bootstrap resamples of impressions (about ±0.2 for AUC). Reproduce with `npm run train:neural && npm run train`.
 
-**Protocol:**
-1. Download MIND-small under its licence.
-2. Run `npm run eval:mind -- --dir MINDsmall_dev`.
-3. Report TopicLens and the TF-IDF baseline side by side, with the number of impressions and cold-start impressions.
+| Model | AUC | MRR | nDCG@5 | nDCG@10 |
+|---|---|---|---|---|
+| Hybrid: LightGBM + neural score | **66.60** | **32.05** | **35.47** | **41.64** |
+| Logistic regression (runs the app) | 63.84 | 30.56 | 33.54 | 39.61 |
+| LightGBM LambdaRank | 63.83 | 30.58 | 33.26 | 39.46 |
+| Linear SVM | 63.74 | 30.56 | 33.52 | 39.59 |
+| Neural NRMS (GPU, MiniLM news encoder) | 63.14 | 29.75 | 32.20 | 38.64 |
+| Random forest | 61.79 | 29.26 | 31.95 | 38.15 |
+| Category match (rule) | 60.94 | 29.24 | 31.71 | 37.64 |
+| Kernel SVM (RBF, Nystroem) | 60.40 | 27.86 | 30.27 | 36.82 |
+| Popularity (earlier-day clicks) | 58.61 | 27.24 | 28.66 | 34.73 |
+| Text similarity (LSA) | 56.03 | 25.61 | 26.89 | 33.39 |
+| KNN classifier (k=50) | 55.66 | 25.97 | 27.85 | 34.00 |
+| Topic match (NMF) | 51.83 | 22.34 | 22.41 | 29.35 |
+| Recent exposure | 51.69 | 23.00 | 24.40 | 30.47 |
+| Random | 50.07 | 21.91 | 22.38 | 28.66 |
+| *BATM-NR, from the paper (Table 5)* | *68.13* | *32.62* | *36.36* | *42.46* |
 
-**Comparability:** results must **not** be put in the same table as the paper's Table 5 without caveats. The paper trains on its own split, uses body text and neural models; TopicLens is untrained and uses title + abstract.
+**Reading the table.**
+- The hybrid combines the neural model's text understanding with popularity and freshness, which the neural model
+  alone cannot see; it is the best model, 1.5 AUC below the paper.
+- Topic match alone is barely better than chance: hand-set topic overlap does not predict clicks well.
+- KNN struggles with 10 mixed-scale signals and a 4% click rate; trained linear and tree models do far better.
+- Not directly comparable to the paper: it reads article bodies and trains on its own split.
 
-## B. Topic quality and explanations
+## B. Explanations (Measured)
 
-| Metric | Status |
+| Check | Status |
 |---|---|
-| NPMI coherence (paper Eq. 17), top-10 descriptors | **Measured** on the sample corpus (Evaluation page). Not comparable to the paper (different reference corpus). |
-| W2V coherence (paper Eq. 18) | Not computed: no trained embeddings |
-| Explanation coverage: share of top-10 items with ≥1 positive topic contribution *and* ≥1 positive history contribution | **Measured** (3 sample users) |
-| Faithfulness: max \|score − Σ contributions\| | **Measured** (≈ machine precision) and unit-tested |
-| Human-rated clarity / usefulness | **Not yet evaluated** |
+| Faithfulness: intercept + Σ contributions = score, for every pick | Unit-tested (`tests/model.test.ts`) |
+| History evidence sums to the history part of the topic and text terms | Unit-tested |
+| Human-rated clarity and usefulness | **Not yet evaluated** |
 
-## C. Interaction
+## C. User study (Not yet evaluated)
 
-| Metric | Status |
-|---|---|
-| Number and type of preference changes | Counted per browser session (Evaluation page, section 4); **not study data** |
-| Feedback response rate: actions that changed the top 10 | Counted per session; **not study data** |
-| Ease of understanding, trust, perceived transparency/control | **Not yet evaluated**; needs the study below |
+**Design.** Within-subjects, two conditions: a plain ranked list vs TopicLens (explanations + controls), counterbalanced,
+different demo readers per condition, about 20-30 participants (confirm with a power analysis).
 
-## D. Proposed user study
-
-**Design:**
-- Within-subjects, two conditions: **Baseline** (ranked list, "Recommended for you") vs **TopicLens** (explanations + controls).
-- Condition order is counterbalanced, and each condition uses a different sample user.
-- Target: ~20–30 participants (to be confirmed by a power analysis).
-
-**Tasks per condition:**
-1. "Why was article X recommended?" Free answer, scored against the model's top contributing topic and history item.
-2. "Make the list show less of a topic you are not interested in." Time and number of actions until satisfied.
+**Tasks per condition.**
+1. "Why was story X recommended?" Free answer, scored against the top contributing signal and past read.
+2. "Make the feed show less of a topic you don't want." Time and actions until satisfied.
 3. Rate 3 recommendations for relevance.
 
-**Measures:**
-- Comprehension accuracy (H1).
-- Post-condition questionnaire on transparency, control and trust (H2), with items adapted from an established framework such as ResQue (Pu, Chen & Hu, RecSys 2011).
-- Time and actions to satisfaction (H3).
-- NASA-TLX workload (H4).
+**Measures and hypotheses.**
+- H1 comprehension accuracy improves with explanations.
+- H2 perceived transparency, control and trust improve (items adapted from ResQue, Pu, Chen & Hu, RecSys 2011).
+- H3 time and actions to a satisfying list fall with controls.
+- H4 workload does not rise (NASA-TLX).
 
-**Analysis:** paired t-test or Wilcoxon per measure, or a mixed-effects model with condition and order as factors. Report effect sizes.
-
-**Ethics:** obtain institutional approval and informed consent. Collect no personal data beyond questionnaire answers.
-
-Until this study is run, every statement about user benefit is a hypothesis.
+**Analysis.** Paired t-test or Wilcoxon per measure, or a mixed-effects model with condition and order; report effect
+sizes. **Ethics:** institutional approval and informed consent; no personal data beyond questionnaire answers.

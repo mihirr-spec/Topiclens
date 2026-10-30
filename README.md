@@ -7,7 +7,17 @@ on:
 > Dairui Liu, Derek Greene, Irene Li, Xuefei Jiang, and Ruihai Dong. 2024. **Topic-Centric Explanations for
 > News Recommendation.** *ACM Transactions on Recommender Systems* 3, 2, Article 17. https://doi.org/10.1145/3680295
 
-See `PROJECT_BRIEF.txt` for the design brief (pages, copy, design direction).
+**Best result:** a hybrid of LightGBM and a GPU-trained neural model reaches **AUC 66.60** on 73,152 MIND test
+visits it never saw (the paper's model: 68.13). The app ranks with a logistic regression (AUC 63.84) because every
+pick then splits exactly into its reasons.
+
+| Doc | Contents |
+|---|---|
+| [docs/EVALUATION_PLAN.md](docs/EVALUATION_PLAN.md) | All 14 models' results, how to read them, and the user-study plan |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | The ML pipeline and the browser app |
+| [docs/RESEARCH_MAPPING.md](docs/RESEARCH_MAPPING.md) | What comes from the paper and what is new |
+| [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) | An 8-minute walkthrough |
+| [PROJECT_BRIEF.txt](PROJECT_BRIEF.txt) | Design brief: pages, copy, visual direction |
 
 ## How it works
 

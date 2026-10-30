@@ -1,48 +1,63 @@
 # Architecture
 
-Everything runs client-side. The engine (`src/engine/`) has no React dependency, so the same code serves the UI, the tests and the MIND evaluation CLI.
+Two halves: an offline **ML pipeline** in Python (`ml/`) that trains and evaluates every model on MIND, and a
+**browser app** in React + TypeScript (`src/`) that runs the trained logistic regression on exported data.
 
 ```mermaid
 flowchart LR
-  A[Sample articles<br/>title + abstract] --> V[Vocabulary + TF-IDF<br/>text.ts, sparse.ts]
-  V --> N[NMF, K=12, 6 restarts<br/>nmf.ts]
-  N --> TM[Topic model<br/>T: K×V, β per article,<br/>named topics<br/>topicModel.ts]
-  H[Reading history<br/>sample users] --> P
-  TM --> P[User profile<br/>u = Σ γᵢ βᵢ]
-  C[Controls & feedback<br/>sliders, mute,<br/>more/less, not interested]:::new --> P
-  P --> S[Scorer<br/>s = uᵀβ_c<br/>recommender.ts]
-  TM --> S
-  S --> E[Explainer<br/>topic + history decomposition,<br/>word highlights<br/>explain.ts]
-  E --> UI[TopicLens UI<br/>Feed · Explorer · Compare ·<br/>Evaluation · About]:::new
-  V --> B[TF-IDF baseline<br/>baseline.ts]
-  B --> UI
-  UI --> C
-  UI --> L[Activity log<br/>top-10 diffs<br/>state.ts]:::new
-  classDef new fill:#fde7d9,stroke:#c2410c
+  subgraph Offline["ml/ (Python)"]
+    M[MIND-small<br/>news.tsv, behaviors.tsv] --> C[Content vectors<br/>TF-IDF → NMF topics K=30<br/>TF-IDF → LSA 100-d]
+    M --> F[Features per reader × candidate<br/>topic, text, section affinity,<br/>popularity, exposure, freshness]
+    C --> F
+    M --> N[Neural NRMS on GPU<br/>MiniLM + self-attention<br/>train_neural.py]
+    F --> T[Models<br/>logistic regression, LightGBM,<br/>KNN, SVMs, random forest]
+    N --> H[Hybrid<br/>LightGBM + neural score]
+    F --> H
+    T --> E[Evaluation on 73,152 unseen visits<br/>AUC, MRR, nDCG@5/10, 95% CIs]
+    H --> E
+    E --> X[build_app_data.py<br/>articles, vectors, personas,<br/>model weights, metrics, photos]
+  end
+  subgraph App["src/ (browser)"]
+    X --> D[data/mind.ts<br/>decode vectors]
+    D --> R[engine/model.ts<br/>profile → features → logistic regression<br/>exact per-signal contributions]
+    U[Reading history,<br/>controls & feedback]:::new --> R
+    R --> UI[Feed · Why panel · Topics ·<br/>Compare · Results]:::new
+    UI --> U
+    UI --> L[Activity log<br/>top-10 diffs, state.ts]:::new
+  end
+  classDef new fill:#e9eefc,stroke:#2449c4
 ```
 
-Orange nodes are TopicLens additions.
+Blue nodes are TopicLens additions beyond the paper.
 
-## Data flow for one action
+## ML pipeline (`ml/`)
 
-1. A user clicks e.g. **Mute "Health & Medicine"**.
-2. `state.ts` computes the current top 10, applies the action to the user's `Preferences`, and recomputes the top 10.
-3. It writes a log entry with the computed difference.
-4. The new state is persisted to `localStorage`.
-5. `App.tsx` recomputes `recommend()` (TopicLens), `recommend()` with default prefs (for Compare) and `baselineRecommend()`.
-6. All pages re-render from the new context.
+| Script | What it does | Output |
+|---|---|---|
+| `train_neural.py` | Encodes every article with MiniLM (GPU), trains an NRMS-style user encoder on 189,519 clicks, keeps the best epoch by validation AUC, writes per-candidate scores | `ml/results/neural.json`, `.dataset-cache/nrms_scores.npy` |
+| `train.py` | Builds topic and LSA vectors (cached), features for 8.58M candidate rows, trains every model, evaluates all of them with bootstrap CIs | `ml/results/metrics.json`, `logreg.json`, `lgbm_model.txt` |
+| `build_app_data.py` | Exports 1,500 dev-day articles + demo readers' histories, quantised vectors, the logistic regression, metrics, human topic names and Wikimedia photos | `src/data/mind-app.json`, `public/showcase/` |
 
-## Module responsibilities
+**Leakage rules.** No feature uses the label of its own row. Popularity uses clicks from strictly earlier days of the
+training log only; exposure and "first seen" use impression times, never labels. The hybrid is trained on the last
+training day, which the neural model never saw.
+
+## App (`src/`)
 
 | Module | Responsibility |
 |---|---|
-| `text.ts` | Tokeniser, stopwords, corpus-driven plural merge, DF-filtered vocabulary, display segmentation |
-| `sparse.ts` | CSR matrices, TF-IDF |
-| `nmf.ts` | Seeded PRNG, sparse multiplicative-update NMF, reconstruction error |
-| `topicModel.ts` | Fit (with restarts), T and β, descriptors, rule-based naming, word highlighting |
-| `recommender.ts` | Profile (γ, feedback, multipliers), candidate filtering, scoring, exact decompositions |
-| `baseline.ts` | TF-IDF cosine baseline |
-| `explain.ts` | Template sentences from computed values; limitations text |
-| `metrics.ts` | AUC, MRR, nDCG@k (MIND definitions), NPMI (Eq. 17), overlap@k |
-| `mind.ts` / `scripts/eval-mind.ts` | MIND TSV parsing and offline evaluation |
-| `state.ts` | Per-user state, actions, change log, persistence |
+| `data/mind.ts` | Loads `mind-app.json`, decodes the quantised topic and text vectors, category names, cold-start seeding |
+| `engine/model.ts` | Reader profile (mean of the last 50 reads, as in training), features, the logistic regression, exact contributions, per-history-article evidence, controls (sliders, mutes, More/Less, Not interested), baselines |
+| `engine/explain.ts` | Plain-language sentences filled from the computed contributions (labelled "template text") |
+| `state.ts` | Per-account history, preferences and activity log (top-10 diffs), saved in localStorage |
+| `auth.ts` | Accounts: Google Identity Services, email, guest, demo reader; localStorage only |
+| `pages/` | Landing, onboarding, feed, Topics, Compare, Results, About |
+| `components/sketch.tsx` | Newsprint doodles (circles, underlines, arrows) and the torn-paper SVG filter |
+
+## Data flow for one action
+
+1. A reader clicks **Mute** on "2020 election".
+2. `state.ts` ranks the current top 10, applies the change, and ranks again.
+3. The difference is written to the activity log and the state is saved to localStorage.
+4. `App.tsx` recomputes `recommend()`; stories at least 25% about the muted topic are hidden with their reason.
+5. Every page re-renders from the new result.
