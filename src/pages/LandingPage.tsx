@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
-  ArrowRight, BookOpen, ClipboardText, CursorClick, EnvelopeSimple, FileMagnifyingGlass, GearSix, GoogleLogo,
+  ArrowLeft, ArrowRight, BookOpen, ClipboardText, CursorClick, EnvelopeSimple, FileMagnifyingGlass, GearSix, GoogleLogo,
   GraduationCap, Graph, Lightbulb, ListChecks, Plus,
 } from "@phosphor-icons/react";
 import { demoAccount, emailAccount, GOOGLE_CLIENT_ID, googleAccount, guestAccount, loadGoogleIdentity, type Account, type AuthResult } from "../auth";
@@ -41,7 +41,39 @@ function Reveal({ children, className = "", delay = 0 }: { children: ReactNode; 
   return <div ref={ref} className={`reveal ${className}`} style={{ ["--d" as string]: `${delay}ms` }}>{children}</div>;
 }
 
+/** Sign-in lives on its own page; every other hash is a section of the landing page. */
+const SIGN_IN = "#/signin";
+const onSignInPage = () => typeof window !== "undefined" && window.location.hash.startsWith(SIGN_IN);
+
 export function LandingPage({ onSignIn, cloud }: { onSignIn: (a: Account) => void; cloud?: CloudAuth }) {
+  const [signInPage, setSignInPage] = useState(onSignInPage);
+
+  useEffect(() => {
+    const onHash = () => setSignInPage(onSignInPage());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  // A new page starts at the top, not where the landing page was scrolled to.
+  useEffect(() => {
+    if (signInPage) window.scrollTo(0, 0);
+  }, [signInPage]);
+
+  if (signInPage) {
+    return (
+      <div className="ed ed-page">
+        <header className="ed-nav">
+          <div className="ed-wrap ed-nav-inner">
+            <a href="#top" aria-label="TopicLens home"><Wordmark /></a>
+            <a className="cta quiet sm" href="#top"><ArrowLeft size={16} aria-hidden="true" /> Back to home</a>
+          </div>
+        </header>
+        <main>
+          <Join onSignIn={onSignIn} cloud={cloud} />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="ed">
       <header className="ed-nav">
@@ -52,7 +84,7 @@ export function LandingPage({ onSignIn, cloud }: { onSignIn: (a: Account) => voi
             <a href="#how">How it works</a>
             <a href="#who">About</a>
           </nav>
-          <a className="cta navy sm" href="#join">Sign in <ArrowRight size={16} aria-hidden="true" /></a>
+          <a className="cta navy sm" href={SIGN_IN}>Sign in <ArrowRight size={16} aria-hidden="true" /></a>
         </div>
       </header>
 
@@ -63,7 +95,6 @@ export function LandingPage({ onSignIn, cloud }: { onSignIn: (a: Account) => voi
         <FrontPage />
         <InsideAPick />
         <DataBand />
-        <Join onSignIn={onSignIn} cloud={cloud} />
         <Faq />
       </main>
       <Footer />
@@ -86,7 +117,7 @@ function Hero() {
             the top. The reason for every pick is one tap away.
           </p>
           <div className="ed-ctas enter" style={{ ["--d" as string]: "240ms" }}>
-            <a className="cta navy" href="#join">Try TopicLens <ArrowRight size={18} aria-hidden="true" /></a>
+            <a className="cta navy" href={SIGN_IN}>Try TopicLens <ArrowRight size={18} aria-hidden="true" /></a>
             <a className="cta quiet" href="#how">See how it works</a>
           </div>
         </div>
@@ -189,7 +220,7 @@ function FrontPage() {
         </Reveal>
         <div className="ed-front">
           {lead && (
-            <a className="ed-story lead" href="#join">
+            <a className="ed-story lead" href={SIGN_IN}>
               <img src={lead.image!.src} alt="" referrerPolicy="no-referrer" />
               <span className="kicker">No. 1 · {categoryName(lead.category)}</span>
               <h3>{lead.title}</h3>
@@ -197,7 +228,7 @@ function FrontPage() {
             </a>
           )}
           {rest.map((a, i) => (
-            <a key={a.id} className="ed-story" href="#join">
+            <a key={a.id} className="ed-story" href={SIGN_IN}>
               <span className="kicker">No. {i + 2} · {categoryName(a.category)}</span>
               <h3>{a.title}</h3>
             </a>
