@@ -12,7 +12,10 @@ export function OnboardingPage({ account, onDone, onCancel }: {
 }) {
   const [picked, setPicked] = useState<string[]>([]);
   // Arriving from the landing page's sign-in card, start at the top of the picker.
-  useEffect(() => window.scrollTo(0, 0), []);
+  // Braces matter: Chrome's scrollTo now returns a Promise, and React would call a returned value as cleanup.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const toggle = (c: string) =>
     setPicked((p) => (p.includes(c) ? p.filter((x) => x !== c) : p.length < MAX ? [...p, c] : p));
 
