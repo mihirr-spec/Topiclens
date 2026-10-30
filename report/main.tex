@@ -49,6 +49,7 @@
 \begin{document}
 
 % ---------------------------------------------------------------- Title page
+\pagenumbering{alph}
 \begin{titlepage}
 \begin{center}
 \onehalfspacing
@@ -391,14 +392,14 @@ the browser application loads. Sign-in and storage go through Supabase.
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-  box/.style={draw, rounded corners=2pt, align=center, minimum width=3.4cm, minimum height=1.1cm, font=\small},
+  box/.style={draw, rounded corners=2pt, align=center, minimum width=3.1cm, minimum height=1.1cm, font=\small},
   arr/.style={-{Stealth[length=2.2mm]}, thick}]
   \node[box] (mind) {MIND-small\\logs and articles};
   \node[box, right=1.2cm of mind] (train) {Python training\\features, 14 models};
   \node[box, right=1.2cm of train] (json) {Exported JSON\\topics, weights};
   \node[box, below=1.4cm of json] (app) {React app\\ranking + reasons};
-  \node[box, left=1.2cm of app] (db) {Supabase\\auth + Postgres};
-  \node[box, left=1.2cm of db] (user) {Reader};
+  \node[box, left=2.4cm of app] (db) {Supabase\\auth + Postgres};
+  \node[box, left=2.4cm of db] (user) {Reader};
   \draw[arr] (mind) -- (train);
   \draw[arr] (train) -- (json);
   \draw[arr] (json) -- (app);
