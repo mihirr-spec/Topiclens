@@ -232,6 +232,13 @@ export function recommend(historyIds: string[], prefs: Preferences, candidates: 
   return { profile, ranked: scored.map((r, i) => ({ ...r, rank: i + 1 })), hidden };
 }
 
+/** Fraction of the top-k items in `a` that also appear in the top-k of `b`. */
+export function overlapAtK(a: string[], b: string[], k: number): number {
+  const sb = new Set(b.slice(0, k));
+  const top = a.slice(0, k);
+  return top.length ? top.filter((x) => sb.has(x)).length / top.length : 0;
+}
+
 /** Single-signal baselines for the Compare page (each measured in ml/train.py). */
 export type BaselineKind = "popularity" | "topic";
 export function baselineRanking(historyIds: string[], kind: BaselineKind): { id: string; rank: number; score: number }[] {

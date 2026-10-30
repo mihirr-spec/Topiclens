@@ -4,7 +4,7 @@ import { Avatar } from "./components/brand";
 import { SketchDefs, Wordmark } from "./components/sketch";
 import { LensContext, type LensContextValue } from "./context";
 import { ARTICLE_BY_ID, DATA_NOTICE } from "./data/mind";
-import { DEFAULT_PREFS, recommend } from "./engine/model";
+import { recommend } from "./engine/model";
 import { AboutPage } from "./pages/AboutPage";
 import { ComparePage } from "./pages/ComparePage";
 import { FeedPage } from "./pages/FeedPage";
@@ -63,7 +63,6 @@ function Shell({ account, onSignOut }: { account: Account; onSignOut: () => void
     user,
     userName: account.name,
     result: recommend(user.historyIds, user.prefs),
-    untouched: recommend(user.historyIds, DEFAULT_PREFS),
     dispatch,
   }), [user, account.name, dispatch]);
 

@@ -3,8 +3,7 @@ import { Evidence, TopicChip } from "../components/shared";
 import { useLens } from "../context";
 import { ARTICLE_BY_ID, RESULTS } from "../data/mind";
 import { shortExplanation } from "../engine/explain";
-import { overlapAtK } from "../engine/metrics";
-import { baselineRanking, type BaselineKind } from "../engine/model";
+import { baselineRanking, overlapAtK, type BaselineKind } from "../engine/model";
 
 const K = 10;
 const BASELINES: Record<BaselineKind, { name: string; result: string; how: string }> = {

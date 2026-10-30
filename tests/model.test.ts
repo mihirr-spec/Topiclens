@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { demoAccount, emailAccount, googleAccount, withInterests } from "../src/auth";
 import { LensContext, type LensContextValue } from "../src/context";
 import { ARTICLE_BY_ID, CATEGORIES, META, MODEL, PERSONAS, POOL, RESULTS, seedHistory, SHOWCASE, TOPICS } from "../src/data/mind";
-import { baselineRanking, buildProfile, DEFAULT_PREFS, PARAMS, recommend, score, type Preferences } from "../src/engine/model";
+import { baselineRanking, buildProfile, DEFAULT_PREFS, overlapAtK, PARAMS, recommend, score, type Preferences } from "../src/engine/model";
 import { AboutPage } from "../src/pages/AboutPage";
 import { ComparePage } from "../src/pages/ComparePage";
 import { FeedPage } from "../src/pages/FeedPage";
@@ -84,6 +84,10 @@ describe("trained-model ranker", () => {
     expect(mean(after.ranked.slice(0, 20).map((r) => r.id))).toBeGreaterThan(mean(res.ranked.slice(0, 20).map((r) => r.id)));
   });
 
+  it("overlap@k counts shared items in the top k", () => {
+    expect(overlapAtK(["a", "b", "c"], ["c", "x", "a"], 3)).toBeCloseTo(2 / 3);
+  });
+
   it("baselines rank by their single signal", () => {
     const pop = baselineRanking(leo.historyIds, "popularity");
     expect(pop[0].score).toBeGreaterThanOrEqual(pop[1].score);
@@ -110,7 +114,7 @@ describe("accounts", () => {
 describe("pages render", () => {
   const ctx = (prefs: Preferences): LensContextValue => {
     const user: UserState = { historyIds: leo.historyIds, prefs, log: [] };
-    return { user, userName: leo.name, result: recommend(user.historyIds, prefs), untouched: recommend(user.historyIds, DEFAULT_PREFS), dispatch: () => {} };
+    return { user, userName: leo.name, result: recommend(user.historyIds, prefs), dispatch: () => {} };
   };
   const render = (Page: () => JSX.Element, value: LensContextValue) =>
     renderToString(createElement(LensContext.Provider, { value }, createElement(Page)));

@@ -6,8 +6,6 @@ export interface LensContextValue {
   user: UserState;
   userName: string;
   result: RecommendationResult;
-  /** Same history, default preferences: the trained model before any user control. */
-  untouched: RecommendationResult;
   dispatch: (a: Action) => void;
 }
 
