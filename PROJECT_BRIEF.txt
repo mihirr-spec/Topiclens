@@ -182,21 +182,20 @@ F. Results: full metrics table with confidence intervals, feature importance.
 G. About: the paper, what's inherited vs new, limitations.
 
 
-10. DESIGN DIRECTION (newsprint sketchbook)
---------------------------------------------
-- Mood: hand-drawn notes on newsprint. Off-white newspaper-texture
-  background (public/paper.png), black ink, one blue ink accent (#2449c4).
-- Type: Caveat Brush for headings and the wordmark, Patrick Hand for
-  handwritten body text, Domine (newspaper serif) for article headlines.
-- Paper cards with torn edges and a soft drop shadow, slightly rotated.
-- Black-and-white (grayscale) news photos inside "clipping" cards.
-- Doodles: circled words ("shows its (working.)"), scribbled underlines,
-  curved arrows, crown / star / spark marks, ink-blob step numbers,
-  "= TopicLens =" wordmark with ink rays.
-- Buttons: solid black brush button (primary), hand-drawn outline (secondary).
-- Sections follow the three mockups: Landing hero, Who it's for (4 cards,
-  blue ink), How it works (5-step zigzag with dotted path).
-
+10. DESIGN DIRECTION (editorial)
+--------------------------------
+- Reference: image 8 ("Who should be able to trust a recommendation?").
+- Warm paper background (#f6f4ee), ink-black type, one navy accent (#1d4e8f).
+- Type: Newsreader (serif) for headlines and reading text, with one navy
+  italic word per headline; Geist (sans) for interface text; IBM Plex Mono
+  for small uppercase eyebrows ("WHO IT'S FOR ----") and numbers.
+- Numbered items "01 ----" with a thin rule, a light line icon, a serif
+  title and serif body; hairline dividers between grid cells.
+- Hero photograph: newspapers, charts and ML books on a desk
+  (public/hero-desk.jpg, cropped from the reference), bleeding off the right
+  edge and fading into the paper on the left.
+- Navy rectangular button "Try TopicLens ->", radius 4px; no shadows,
+  textures or doodles.
 
 11. VOICE & COPY RULES
 ----------------------

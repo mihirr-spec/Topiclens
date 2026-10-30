@@ -1,7 +1,6 @@
 import { useState } from "react";
 import type { Account } from "../auth";
-import { Avatar } from "../components/brand";
-import { SketchDefs, Wordmark } from "../components/sketch";
+import { Avatar, Wordmark } from "../components/brand";
 import { CATEGORIES, categoryName, POOL } from "../data/mind";
 
 const MIN = 2;
@@ -17,7 +16,6 @@ export function OnboardingPage({ account, onDone, onCancel }: {
 
   return (
     <div className="landing">
-      <SketchDefs />
       <header className="landing-nav">
         <div className="landing-inner">
           <Wordmark />

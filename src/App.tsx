@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth, withInterests, type Account } from "./auth";
-import { Avatar } from "./components/brand";
-import { SketchDefs, Wordmark } from "./components/sketch";
+import { Avatar, Wordmark } from "./components/brand";
 import { LensContext, type LensContextValue } from "./context";
 import { ARTICLE_BY_ID, DATA_NOTICE } from "./data/mind";
 import { recommend } from "./engine/model";
@@ -71,7 +70,6 @@ function Shell({ account, onSignOut }: { account: Account; onSignOut: () => void
 
   return (
     <div className="app">
-      <SketchDefs />
       <header className="app-header">
         <div className="header-inner">
           <a href="#/feed" aria-label="TopicLens, your feed"><Wordmark /></a>

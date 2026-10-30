@@ -2,10 +2,10 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import "@fontsource-variable/geist";
-import "@fontsource/caveat-brush";
-import "@fontsource/patrick-hand";
-import "@fontsource/domine/400.css";
-import "@fontsource/domine/700.css";
+import "@fontsource-variable/newsreader/opsz.css";
+import "@fontsource-variable/newsreader/opsz-italic.css";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/500.css";
 import "./styles.css";
 
 createRoot(document.getElementById("root")!).render(
