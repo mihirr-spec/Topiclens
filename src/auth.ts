@@ -202,7 +202,7 @@ export function useAuth() {
 
   const signInGoogle = useCallback(async (): Promise<AuthResult> => {
     if (!supabase) return { error: "Cloud accounts aren't configured." };
-    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin + window.location.pathname } });
     return error ? { error: friendly(error.message) } : {};
   }, []);
 

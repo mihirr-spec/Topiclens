@@ -76,7 +76,7 @@ export function LandingPage({ onSignIn, cloud }: { onSignIn: (a: Account) => voi
 function Hero() {
   return (
     <section className="ed-hero">
-      <div className="ed-hero-photo" aria-hidden="true"><img src="/hero-desk.jpg" alt="" /></div>
+      <div className="ed-hero-photo" aria-hidden="true"><img src={`${import.meta.env.BASE_URL}hero-desk.jpg`} alt="" /></div>
       <div className="ed-wrap" style={{ width: "100%" }}>
         <div className="ed-hero-copy">
           <div className="enter"><Eyebrow>News recommendation</Eyebrow></div>
