@@ -38,6 +38,8 @@ export interface ActiveUser {
 
 export type Action =
   | { type: "read"; id: string }
+  /** The reader opened a recommended story: a click, logged like a MIND click. */
+  | { type: "click"; id: string }
   | { type: "like"; id: string }
   | { type: "dislike"; id: string }
   | { type: "dismiss"; id: string }
@@ -73,6 +75,7 @@ function reduceUser(u: UserState, a: Action, seed: string[]): UserState {
   const p = u.prefs;
   switch (a.type) {
     case "read":
+    case "click":
       return { ...u, historyIds: uniq([...u.historyIds, a.id]) };
     case "like":
       return { ...u, prefs: { ...p, liked: uniq([...p.liked, a.id]), disliked: p.disliked.filter((x) => x !== a.id) } };
@@ -97,6 +100,7 @@ function reduceUser(u: UserState, a: Action, seed: string[]): UserState {
 export function describeAction(a: Action, title: (id: string) => string, u: UserState): string {
   switch (a.type) {
     case "read": return `Read “${title(a.id)}” (added to history)`;
+    case "click": return `Opened “${title(a.id)}” (click added to history)`;
     case "like": return `More like this: “${title(a.id)}”`;
     case "dislike": return `Less like this: “${title(a.id)}”`;
     case "dismiss": return `Not interested: “${title(a.id)}”`;

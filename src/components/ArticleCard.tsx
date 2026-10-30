@@ -8,22 +8,24 @@ export function ArticleCard({ rec, open, onToggle }: { rec: Recommendation; open
   const { dispatch, user } = useLens();
   const a = ARTICLE_BY_ID.get(rec.id)!;
   const liked = user.prefs.liked.includes(rec.id);
+  // Opening a story is a click: it joins the reading history and the feed re-ranks, as in MIND's logs.
+  const onOpen = () => dispatch({ type: "click", id: rec.id });
 
   return (
     <article className={`feed-card ${a.image ? "has-image" : ""}`} aria-labelledby={`t-${rec.id}`}>
       {a.image && (
-        <div className="feed-thumb">
+        <a className="feed-thumb" href={a.url} target="_blank" rel="noreferrer" onClick={onOpen} tabIndex={-1} aria-hidden="true">
           <img src={a.image.src} alt="" loading="lazy" referrerPolicy="no-referrer" />
-        </div>
+        </a>
       )}
       <div className="feed-body">
         <div className="meta">
           <span className="rank">#{rec.rank}</span>
           <span className="match" title="The model's predicted click probability">{pct(rec.prob)} match</span>
           <span>{categoryName(a.category)}</span>
-          <a href={a.url} target="_blank" rel="noreferrer">Read on MSN ↗</a>
+          <a href={a.url} target="_blank" rel="noreferrer" onClick={onOpen}>Read on MSN ↗</a>
         </div>
-        <h3 id={`t-${rec.id}`}>{a.title}</h3>
+        <h3 id={`t-${rec.id}`}><a className="headline-link" href={a.url} target="_blank" rel="noreferrer" onClick={onOpen}>{a.title}</a></h3>
         <p className="summary">{a.abstract}</p>
         <div className="row">
           {rec.topTopics.map((t) => <TopicChip key={t} topic={t} value={a.topics[t]} />)}

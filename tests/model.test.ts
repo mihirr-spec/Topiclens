@@ -84,6 +84,16 @@ describe("trained-model ranker", () => {
     expect(mean(after.ranked.slice(0, 20).map((r) => r.id))).toBeGreaterThan(mean(res.ranked.slice(0, 20).map((r) => r.id)));
   });
 
+  it("a click joins the history: the story leaves the feed and similar ones rise", () => {
+    const clicked = res.ranked[40].id;
+    const after = recommend([...leo.historyIds, clicked], DEFAULT_PREFS);
+    expect(after.ranked.some((r) => r.id === clicked)).toBe(false);
+    const t = ARTICLE_BY_ID.get(clicked)!.topics;
+    const sim = (id: string) => ARTICLE_BY_ID.get(id)!.topics.reduce((acc, v, k) => acc + v * t[k], 0);
+    const mean = (ids: string[]) => ids.reduce((acc, id) => acc + sim(id), 0) / ids.length;
+    expect(mean(after.ranked.slice(0, 20).map((r) => r.id))).toBeGreaterThan(mean(res.ranked.slice(0, 20).map((r) => r.id)));
+  });
+
   it("overlap@k counts shared items in the top k", () => {
     expect(overlapAtK(["a", "b", "c"], ["c", "x", "a"], 3)).toBeCloseTo(2 / 3);
   });
