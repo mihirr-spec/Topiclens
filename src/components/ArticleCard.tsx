@@ -1,21 +1,22 @@
 import { useLens } from "../context";
-import { ARTICLE_BY_ID, categoryName, MODEL } from "../data/mind";
+import { ARTICLE_BY_ID, categoryName, MODEL, type Article } from "../data/mind";
 import { LIMITATIONS_NOTE, longExplanation, positiveShares, shortExplanation, signalName } from "../engine/explain";
 import { effectiveMultiplier, type Recommendation } from "../engine/model";
 import { Evidence, HighlightedText, pct, TopicChip } from "./shared";
 
 /**
  * Where a story opens. MIND's own links (assets.msn.com/labs/mind/…) are offline and were never archived,
- * so this goes to the top web result for the exact headline (DuckDuckGo's "\" jumps straight to it).
- * Most MIND stories were syndicated, so that is usually the original publisher's article.
+ * so this is a Google search built from the story's own fields: the exact headline in quotes, its section and
+ * when it ran (MIND covers November 2019). No site filter and no jump to the first hit: the reader picks.
  */
-export const storyLink = (title: string) => `https://duckduckgo.com/?q=${encodeURIComponent(`\\ "${title}"`)}`;
+export const storyLink = (a: Pick<Article, "title" | "category">) =>
+  `https://www.google.com/search?q=${encodeURIComponent(`"${a.title}" ${categoryName(a.category)} news November 2019`)}`;
 
 export function ArticleCard({ rec, open, onToggle }: { rec: Recommendation; open: boolean; onToggle: () => void }) {
   const { dispatch, user, result } = useLens();
   const a = ARTICLE_BY_ID.get(rec.id)!;
   const liked = user.prefs.liked.includes(rec.id);
-  const href = storyLink(a.title);
+  const href = storyLink(a);
   // Opening a story is a click: it joins the reading history and the feed re-ranks, as in MIND's logs.
   const onOpen = () => dispatch({ type: "click", id: rec.id, passedOver: result.ranked.slice(0, rec.rank - 1).map((r) => r.id) });
 
