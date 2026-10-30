@@ -3,7 +3,7 @@ import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { demoAccount, emailAccount, googleAccount, withInterests } from "../src/auth";
 import { LensContext, type LensContextValue } from "../src/context";
-import { ARTICLE_BY_ID, CATEGORIES, META, MODEL, PERSONAS, POOL, RESULTS, seedHistory, SHOWCASE, TOPICS } from "../src/data/mind";
+import { ARTICLE_BY_ID, CATEGORIES, META, MODEL, PERSONAS, POOL, RESULTS, SHOWCASE, TOPICS } from "../src/data/mind";
 import { baselineRanking, buildProfile, DEFAULT_PREFS, overlapAtK, PARAMS, recommend, score, type Preferences } from "../src/engine/model";
 import { AboutPage } from "../src/pages/AboutPage";
 import { ComparePage } from "../src/pages/ComparePage";
@@ -129,12 +129,20 @@ describe("trained-model ranker", () => {
 });
 
 describe("accounts", () => {
-  it("normalises email profiles and seeds onboarding histories from the pool", () => {
+  it("normalises email profiles; a new account starts with no invented history", () => {
     expect(emailAccount("  Ria ", "Ria@Example.COM ").id).toBe(emailAccount("", "ria@example.com").id);
     const a = withInterests(emailAccount("R", "r@x.org"), [CATEGORIES[0], CATEGORIES[1]]);
-    expect(a.seedHistoryIds).toEqual(seedHistory([CATEGORIES[0], CATEGORIES[1]]));
-    expect(a.seedHistoryIds.length).toBeGreaterThan(0);
+    expect(a.seedHistoryIds).toEqual([]);
     expect(demoAccount(leo.id).seedHistoryIds).toEqual(leo.historyIds);
+  });
+
+  it("cold start: with no history, the chosen sections' most-clicked stories come first", () => {
+    const sections = [CATEGORIES[0], CATEGORIES[1]];
+    const top = recommend([], { ...DEFAULT_PREFS, sections }).ranked.slice(0, 10);
+    expect(top.every((r) => sections.includes(ARTICLE_BY_ID.get(r.id)!.category))).toBe(true);
+    // Inside the chosen sections the order follows popularity, not any history.
+    const ctr = top.map((r) => r.contributions.find((c) => c.feature === "prior_ctr")!.value);
+    expect(ctr[0]).toBeGreaterThanOrEqual(ctr[ctr.length - 1]);
   });
 
   it("reads Google ID-token claims, including non-ASCII names", () => {
@@ -167,7 +175,15 @@ describe("pages render", () => {
 
   it("landing page shows every sign-in option and real demo readers", () => {
     const html = renderToString(createElement(LandingPage, { onSignIn: () => {} }));
-    for (const s of ["Continue with Google", "Continue with email", "Continue as guest", `Continue as ${leo.name}`, "most-clicked", "How it works", "Who"]) expect(html).toContain(s);
+    for (const s of ["most-clicked", "How it works", "Who", "#/signin"]) expect(html).toContain(s);
+    // Sign-in is its own page at #/signin.
+    (globalThis as { window?: unknown }).window = { location: { hash: "#/signin" } };
+    try {
+      const signIn = renderToString(createElement(LandingPage, { onSignIn: () => {} }));
+      for (const s of ["Continue with Google", "Continue with email", "Continue as guest", `Continue as ${leo.name}`, "Back to home"]) expect(signIn).toContain(s);
+    } finally {
+      delete (globalThis as { window?: unknown }).window;
+    }
     const onboarding = renderToString(createElement(OnboardingPage, { account: emailAccount("R", "r@x.org"), onDone: () => {}, onCancel: () => {} }));
     expect(onboarding).toContain("What do you like to read?");
   });

@@ -6,7 +6,7 @@ import { CATEGORIES, categoryName, POOL } from "../data/mind";
 const MIN = 2;
 const MAX = 5;
 
-/** Cold start: a new account picks sections; their most typical articles become the starting history. */
+/** Cold start: a new account picks sections; the feed opens on the most-clicked stories in them. */
 export function OnboardingPage({ account, onDone, onCancel }: {
   account: Account; onDone: (interests: string[]) => void; onCancel: () => void;
 }) {

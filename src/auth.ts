@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { PERSONAS, seedHistory } from "./data/mind";
+import { PERSONAS } from "./data/mind";
 import { loadProfile, saveProfile } from "./lib/cloud";
 import { cloudEnabled, supabase } from "./lib/supabase";
 
@@ -91,8 +91,13 @@ export function googleAccount(credential: string): Account {
   };
 }
 
+/**
+ * Cold start: a new reader has no history, so none is invented. With an empty history the trained model's
+ * history signals are neutral and popularity and freshness lead, plus the boost for the chosen sections:
+ * the feed opens on the most-clicked stories in those sections and personalises from the first click.
+ */
 export function withInterests(account: Account, interests: string[]): Account {
-  return { ...account, interests, seedHistoryIds: seedHistory(interests) };
+  return { ...account, interests, seedHistoryIds: [] };
 }
 
 /** Turns a Supabase user + their profile row into an Account. */

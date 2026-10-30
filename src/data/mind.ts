@@ -112,11 +112,6 @@ export const BEST_RESULT: ResultRow = [...RESULTS].sort((a, b) => b.auc.mean - a
 /** The row for the model the app actually ranks with. */
 export const APP_MODEL_RESULT: ResultRow | undefined = RESULTS.find((r) => r.model === "Logistic regression");
 
-/** Cold-start history for a new account: the most-shown pool articles of each chosen category, oldest exposure first. */
-export function seedHistory(interests: string[], perCategory = 3): string[] {
-  return interests.flatMap((c) => POOL.filter((a) => a.category === c).slice(0, perCategory).map((a) => a.id));
-}
-
 export const DATA_NOTICE =
   `Real data: ${POOL.length.toLocaleString("en-US")} Microsoft News articles from MIND-small (${META.license}). ` +
   `Ranked by a ${MODEL.name.toLowerCase()} trained on ${META.train_impressions.toLocaleString("en-US")} real visits.`;
