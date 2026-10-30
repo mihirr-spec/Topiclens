@@ -56,7 +56,10 @@ function Shell({ account, onSignOut }: { account: Account; onSignOut: () => void
   }, []);
 
   const title = useCallback((id: string) => ARTICLE_BY_ID.get(id)?.title ?? id, []);
-  const active = useMemo(() => ({ id: account.id, seedHistoryIds: account.seedHistoryIds }), [account.id, account.seedHistoryIds]);
+  const active = useMemo(
+    () => ({ id: account.id, seedHistoryIds: account.seedHistoryIds, interests: account.interests }),
+    [account.id, account.seedHistoryIds, account.interests],
+  );
   const { user, dispatch } = useAppState(title, active);
 
   const ctx = useMemo<LensContextValue>(() => ({

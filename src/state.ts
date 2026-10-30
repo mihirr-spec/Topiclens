@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { TOPICS } from "./data/mind";
+import { categoryName, TOPICS } from "./data/mind";
 import { DEFAULT_PREFS, recommend, type Preferences } from "./engine/model";
 
 /**
@@ -34,6 +34,8 @@ export interface ActiveUser {
   id: string;
   /** History a new or reset profile starts from. */
   seedHistoryIds: string[];
+  /** Sections picked at sign-up; a new or reset profile starts with them as its preferences. */
+  interests: string[];
 }
 
 export type Action =
@@ -45,6 +47,7 @@ export type Action =
   | { type: "dismiss"; id: string }
   | { type: "set-multiplier"; topic: number; value: number }
   | { type: "toggle-mute"; topic: number }
+  | { type: "set-sections"; sections: string[] }
   | { type: "reset-topics" }
   | { type: "reset-user" };
 
@@ -52,8 +55,8 @@ export type Action =
 const STORAGE_KEY = "topiclens:v3";
 const TOP_N = 10;
 
-function freshUser(seed: string[]): UserState {
-  return { historyIds: [...seed], prefs: structuredClone(DEFAULT_PREFS), log: [] };
+function freshUser(active: Pick<ActiveUser, "seedHistoryIds" | "interests">): UserState {
+  return { historyIds: [...active.seedHistoryIds], prefs: { ...structuredClone(DEFAULT_PREFS), sections: [...active.interests] }, log: [] };
 }
 
 function initialState(): AppState {
@@ -71,7 +74,7 @@ function topIds(u: UserState): string[] {
 
 const uniq = (xs: string[]) => [...new Set(xs)];
 
-function reduceUser(u: UserState, a: Action, seed: string[]): UserState {
+function reduceUser(u: UserState, a: Action, active: ActiveUser): UserState {
   const p = u.prefs;
   switch (a.type) {
     case "read":
@@ -90,10 +93,12 @@ function reduceUser(u: UserState, a: Action, seed: string[]): UserState {
         ...u,
         prefs: { ...p, muted: p.muted.includes(a.topic) ? p.muted.filter((t) => t !== a.topic) : [...p.muted, a.topic] },
       };
+    case "set-sections":
+      return { ...u, prefs: { ...p, sections: [...a.sections] } };
     case "reset-topics":
       return { ...u, prefs: { ...p, multipliers: {}, muted: [] } };
     case "reset-user":
-      return freshUser(seed);
+      return freshUser(active);
   }
 }
 
@@ -107,6 +112,7 @@ export function describeAction(a: Action, title: (id: string) => string, u: User
     case "set-multiplier": return `Set interest in ${TOPICS[a.topic].label} to ×${a.value.toFixed(2)}`;
     case "toggle-mute":
       return `${u.prefs.muted.includes(a.topic) ? "Unmuted" : "Muted"} ${TOPICS[a.topic].label}`;
+    case "set-sections": return `Set your sections to ${a.sections.map(categoryName).join(", ") || "none"}`;
     case "reset-topics": return "Reset all topic controls";
     case "reset-user": return "Reset profile";
   }
@@ -130,7 +136,7 @@ export function diffRankings(before: string[], after: string[], title: (id: stri
 
 export function useAppState(title: (id: string) => string, active: ActiveUser) {
   const [state, setState] = useState<AppState>(initialState);
-  const { id: uid, seedHistoryIds } = active;
+  const { id: uid } = active;
 
   useEffect(() => {
     try {
@@ -143,8 +149,8 @@ export function useAppState(title: (id: string) => string, active: ActiveUser) {
   const dispatch = useCallback(
     (a: Action) => {
       setState((s) => {
-        const u = s[uid] ?? freshUser(seedHistoryIds);
-        const next = reduceUser(u, a, seedHistoryIds);
+        const u = s[uid] ?? freshUser(active);
+        const next = reduceUser(u, a, active);
         if (a.type === "reset-user") return { ...s, [uid]: next };
 
         const mergeKey = a.type === "set-multiplier" ? `mult-${a.topic}` : undefined;
@@ -164,9 +170,9 @@ export function useAppState(title: (id: string) => string, active: ActiveUser) {
         return { ...s, [uid]: { ...next, log } };
       });
     },
-    [title, uid, seedHistoryIds],
+    [title, uid, active],
   );
 
-  const user = useMemo(() => state[uid] ?? freshUser(seedHistoryIds), [state, uid, seedHistoryIds]);
+  const user = useMemo(() => state[uid] ?? freshUser(active), [state, uid, active]);
   return { user, dispatch };
 }

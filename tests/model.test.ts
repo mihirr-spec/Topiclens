@@ -94,6 +94,20 @@ describe("trained-model ranker", () => {
     expect(mean(after.ranked.slice(0, 20).map((r) => r.id))).toBeGreaterThan(mean(res.ranked.slice(0, 20).map((r) => r.id)));
   });
 
+  it("preferred sections pull their stories up the feed", () => {
+    const share = (ids: string[], c: string) => ids.filter((id) => ARTICLE_BY_ID.get(id)!.category === c).length;
+    const target = "lifestyle";
+    const top = (prefs: Preferences) => recommend(leo.historyIds, prefs).ranked.slice(0, 10).map((r) => r.id);
+    expect(share(top({ ...DEFAULT_PREFS, sections: [target] }), target)).toBeGreaterThan(share(top(DEFAULT_PREFS), target));
+  });
+
+  it("a chosen section shows up as its own exact reason in the score", () => {
+    const target = CATEGORIES.find((c) => c !== "sports" && c !== "news")!;
+    const rec = recommend(leo.historyIds, { ...DEFAULT_PREFS, sections: [target] }).ranked.find((r) => ARTICLE_BY_ID.get(r.id)!.category === target)!;
+    expect(rec.contributions.find((c) => c.feature === "section_pref")?.contribution).toBeCloseTo(PARAMS.sectionBoost, 12);
+    expect(MODEL.intercept + rec.contributions.reduce((acc, c) => acc + c.contribution, 0)).toBeCloseTo(rec.logit, 10);
+  });
+
   it("overlap@k counts shared items in the top k", () => {
     expect(overlapAtK(["a", "b", "c"], ["c", "x", "a"], 3)).toBeCloseTo(2 / 3);
   });

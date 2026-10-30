@@ -24,15 +24,25 @@ export interface Preferences {
   liked: string[];
   disliked: string[];
   dismissed: string[];
+  /** Sections the reader says they prefer (MIND categories); blended into the section-affinity signal. */
+  sections?: string[];
 }
 
-export const DEFAULT_PREFS: Preferences = { multipliers: {}, muted: [], liked: [], disliked: [], dismissed: [] };
+export const DEFAULT_PREFS: Preferences = { multipliers: {}, muted: [], liked: [], disliked: [], dismissed: [], sections: [] };
 
 export const PARAMS = {
   /** How strongly More / Less like this shift the profile. */
   feedbackStrength: 0.5,
   /** Articles with at least this share of a muted topic are hidden. */
   muteThreshold: 0.25,
+  /**
+   * Log-odds added to stories from a section the reader chose. The trained model weighs
+   * section share lightly (sub-section and wording carry most of it), so stated preferences
+   * get their own explicit, visible term instead of being diluted into that signal.
+   * 2.0 log-odds (about 7x the odds) brings 1-4 stories from a newly chosen section into a
+   * strongly sports-reading demo reader's top 10 while their history still leads.
+   */
+  sectionBoost: 2.0,
 };
 
 export function effectiveMultiplier(prefs: Preferences, topic: number): number {
@@ -53,6 +63,8 @@ export interface Profile {
   categoryShare: Map<string, number>;
   subcategoryShare: Map<string, number>;
   historyLength: number;
+  /** Sections the reader chose (stated preference). */
+  sections: ReadonlySet<string>;
 }
 
 const mean = (vs: Float32Array[], dim: number) => {
@@ -91,6 +103,7 @@ export function buildProfile(historyIds: string[], prefs: Preferences): Profile 
     categoryShare: shares(pool.map((a) => a.category)),
     subcategoryShare: shares(pool.map((a) => a.subcategory)),
     historyLength: historyIds.length,
+    sections: new Set(prefs.sections ?? []),
   };
 }
 
@@ -170,6 +183,10 @@ export function score(profile: Profile, a: Article): { logit: number; contributi
     feature: MODEL.features[j], label: MODEL.labels[j], value: v,
     contribution: MODEL.coef[j] * ((v - MODEL.mean[j]) / MODEL.scale[j]),
   }));
+  // TopicLens extension on top of the trained model: an explicit boost for chosen sections.
+  if (profile.sections.has(a.category)) {
+    contributions.push({ feature: "section_pref", label: "A section you chose", value: 1, contribution: PARAMS.sectionBoost });
+  }
   const logit = MODEL.intercept + contributions.reduce((s, c) => s + c.contribution, 0);
   contributions.sort((p, q) => Math.abs(q.contribution) - Math.abs(p.contribution));
   return { logit, contributions };

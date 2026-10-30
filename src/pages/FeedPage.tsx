@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArticleCard } from "../components/ArticleCard";
 import { ActivityLog, Bar, EmptyState, Evidence, pct, TopicChip } from "../components/shared";
 import { useLens } from "../context";
-import { APP_MODEL_RESULT, ARTICLE_BY_ID, categoryName, META, MODEL, TOPICS } from "../data/mind";
+import { APP_MODEL_RESULT, ARTICLE_BY_ID, CATEGORIES, categoryName, META, MODEL, TOPICS } from "../data/mind";
 import type { HiddenReason } from "../engine/model";
 
 const PAGE_SIZE = 10;
@@ -47,6 +47,7 @@ export function FeedPage() {
           )}
         </div>
         <aside className="stack">
+          <SectionsPanel />
           <TastePanel />
           <HistoryPanel />
           <HiddenPanel />
@@ -55,6 +56,31 @@ export function FeedPage() {
         </aside>
       </div>
     </>
+  );
+}
+
+function SectionsPanel() {
+  const { user, dispatch } = useLens();
+  const chosen = user.prefs.sections ?? [];
+  const toggle = (c: string) => {
+    const next = chosen.includes(c) ? chosen.filter((x) => x !== c) : [...chosen, c];
+    dispatch({ type: "set-sections", sections: next });
+  };
+  return (
+    <section className="card" aria-labelledby="sections-h">
+      <div className="section-title">
+        <h3 id="sections-h">Your sections</h3>
+        <Evidence kind="new" />
+      </div>
+      <p className="small muted">Pick what you want more of. Stories from these sections get a visible boost on top of the trained model's score.</p>
+      <div className="section-chips" role="group" aria-label="Preferred sections">
+        {CATEGORIES.map((c) => (
+          <button key={c} className={`section-chip ${chosen.includes(c) ? "on" : ""}`} aria-pressed={chosen.includes(c)} onClick={() => toggle(c)}>
+            {categoryName(c)}
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 
